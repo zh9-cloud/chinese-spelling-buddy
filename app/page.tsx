@@ -1,0 +1,79 @@
+import Link from "next/link";
+import type { Metadata } from "next";
+import { AppIcon } from "@/components/ui/AppIcon";
+
+export const metadata: Metadata = {
+  title: "Chinese Spelling Buddy · 华文听写助手",
+};
+
+export default function LandingPage() {
+  return (
+    <div className="min-h-screen flex flex-col bg-gradient-to-b from-brand-50 to-white">
+      <div className="flex-1 flex flex-col items-center justify-center px-8 py-16 text-center max-w-sm mx-auto w-full">
+
+        {/* App icon */}
+        <div className="mb-8" style={{ filter: "drop-shadow(0 16px 40px rgba(99,102,241,0.35))" }}>
+          <AppIcon size={112} />
+        </div>
+
+        {/* English title — on top */}
+        <p className="font-black tracking-tight text-gray-900 mb-1"
+          style={{ fontSize: "clamp(1.5rem, 7.5vw, 2rem)" }}>
+          Chinese Spelling{" "}
+          <span className="text-brand-500">Buddy</span>
+        </p>
+
+        {/* Chinese title */}
+        <h1 className="font-black cjk tracking-tight text-gray-700 mb-4"
+          style={{ fontSize: "clamp(1.5rem, 7.5vw, 2rem)", lineHeight: 1.2 }}>
+          华文听写助手
+        </h1>
+
+        {/* Tagline */}
+        <div className="flex items-center gap-2 mb-10">
+          <span className="text-brand-400" style={{ fontSize: "0.75rem" }}>◆</span>
+          <p className="font-black uppercase text-gray-400"
+            style={{ fontSize: "0.68rem", letterSpacing: "0.15em" }}>
+            SG Primary 3–6
+          </p>
+          <span className="text-brand-400" style={{ fontSize: "0.75rem" }}>◆</span>
+        </div>
+
+        {/* Feature pills */}
+        <div className="flex flex-wrap justify-center gap-2 mb-10">
+          {[
+            { icon: "📖", text: "学习模式" },
+            { icon: "✏️", text: "测试模式" },
+            { icon: "📚", text: "错字本" },
+          ].map(({ icon, text }) => (
+            <span key={text}
+              className="flex items-center gap-1.5 bg-white border border-gray-200 rounded-full px-3.5 py-1.5 text-sm font-semibold text-gray-500 shadow-sm">
+              {icon} {text}
+            </span>
+          ))}
+        </div>
+
+        {/* Entry buttons */}
+        <div className="w-full space-y-3">
+          <Link href="/parent/dashboard"
+            className="flex items-center justify-center gap-3 w-full rounded-2xl py-4 transition-all duration-150 active:scale-95 bg-brand-500 hover:bg-brand-600 shadow-lg shadow-brand-200 text-white">
+            <span className="text-2xl">👨‍👧</span>
+            <span style={{ fontSize: "1.05rem", fontWeight: 600 }}>家长</span>
+            <span style={{ fontSize: "1.05rem", fontWeight: 900, letterSpacing: "0.02em" }}>Parent Login</span>
+          </Link>
+
+          <Link href="/student/dashboard"
+            className="flex items-center justify-center gap-3 w-full rounded-2xl py-4 transition-all duration-150 active:scale-95 bg-jade-500 hover:bg-jade-600 shadow-lg shadow-jade-200 text-white">
+            <span className="text-2xl">🧒</span>
+            <span style={{ fontSize: "1.05rem", fontWeight: 600 }}>学生</span>
+            <span style={{ fontSize: "1.05rem", fontWeight: 900, letterSpacing: "0.02em" }}>Student Login</span>
+          </Link>
+        </div>
+
+        <p className="text-xs font-semibold tracking-widest uppercase text-gray-300 mt-5">
+          Account system coming soon
+        </p>
+      </div>
+    </div>
+  );
+}

@@ -1,0 +1,24 @@
+{
+  "name": "Chinese Dictation Buddy",
+  "short_name": "听写助手",
+  "description": "Practice Chinese dictation for Singapore primary school students",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#fef3e2",
+  "theme_color": "#f5880a",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
