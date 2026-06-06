@@ -1,11 +1,12 @@
 "use client";
 
-import { useState, useCallback, Suspense } from "react";
+import { useState, useCallback, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { AppShell } from "@/components/layout/AppShell";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
-import { loadStore, addDictationList, updateDictationList, newId } from "@/lib/storage";
+import { useStore } from "@/context/StoreContext";
+import { newId } from "@/lib/storage";
 import type { DictationList, Word } from "@/lib/types";
 
 interface WordRow {
@@ -13,6 +14,7 @@ interface WordRow {
   word: string;
   pinyin: string;
   meaning: string;
+  isSentence?: boolean;
 }
 
 function rowsFromWords(words: Word[]): WordRow[] {
@@ -21,6 +23,7 @@ function rowsFromWords(words: Word[]): WordRow[] {
     word: w.word,
     pinyin: w.pinyin ?? "",
     meaning: w.meaning ?? "",
+    isSentence: w.isSentence,
   }));
 }
 
@@ -37,7 +40,7 @@ function AddDictationForm() {
   const params = useSearchParams();
   const editId = params.get("edit");          // present when editing
 
-  const store = loadStore();
+  const { store, addDictationList, updateDictationList } = useStore();
   const existing = editId
     ? store.dictationLists.find((d) => d.id === editId)
     : undefined;
@@ -56,10 +59,41 @@ function AddDictationForm() {
   );
   const [submitting, setSubmitting] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [ocrLoading, setOcrLoading] = useState(false);
+  const [ocrError, setOcrError] = useState("");
 
   const isEditing = !!existing;
 
   const [lookingUp, setLookingUp] = useState<Set<string>>(new Set());
+
+  // When editing an existing list, auto-fill meanings for any items that are missing them.
+  // This catches sentences (and words) saved before the auto-lookup feature was added.
+  useEffect(() => {
+    if (!isEditing) return;
+    const missing = rows.filter((r) => r.word.trim() && !r.meaning);
+    if (!missing.length) return;
+
+    missing.forEach(async (row) => {
+      setLookingUp((prev) => new Set(prev).add(row.id));
+      try {
+        const res = await fetch(`/api/lookup?word=${encodeURIComponent(row.word.trim())}`);
+        if (!res.ok) return;
+        const d = await res.json() as { pinyin?: string; meaning?: string };
+        setRows((prev) =>
+          prev.map((r) =>
+            r.id === row.id
+              ? { ...r, pinyin: r.pinyin || d.pinyin || "", meaning: r.meaning || d.meaning || "" }
+              : r
+          )
+        );
+      } catch {
+        // silently ignore
+      } finally {
+        setLookingUp((prev) => { const s = new Set(prev); s.delete(row.id); return s; });
+      }
+    });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // run once on mount only
 
   function updateRow(id: string, field: keyof WordRow, value: string) {
     setRows((prev) => prev.map((r) => (r.id === id ? { ...r, [field]: value } : r)));
@@ -138,6 +172,7 @@ function AddDictationForm() {
         word: r.word.trim(),
         pinyin: r.pinyin.trim() || undefined,
         meaning: r.meaning.trim() || undefined,
+        isSentence: r.isSentence || undefined,
       }));
 
     if (isEditing && existing) {
@@ -164,6 +199,73 @@ function AddDictationForm() {
     }
 
     router.push("/parent/dashboard");
+  }
+
+  // ── OCR: photo → word list ───────────────────────────────────────────────
+  async function handleOcrPhoto(file: File) {
+    setOcrLoading(true);
+    setOcrError("");
+    try {
+      const base64 = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve((reader.result as string).split(",")[1]);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+
+      const res = await fetch("/api/ocr", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ imageBase64: base64, mimeType: file.type }),
+      });
+
+      if (!res.ok) {
+        const err = await res.json() as { error?: string };
+        throw new Error(err.error ?? "OCR failed");
+      }
+
+      const data = await res.json() as {
+        words: { word: string; pinyin?: string; meaning?: string; isSentence?: boolean }[]
+      };
+      if (!data.words?.length) throw new Error("未识别到生词 · No words found");
+
+      // Build initial rows from OCR result
+      const rawRows = data.words.map((w) => ({
+        id: newId(),
+        word: w.word,
+        pinyin: w.pinyin ?? "",
+        meaning: w.meaning ?? "",
+        isSentence: w.isSentence ?? false,
+      }));
+
+      // Auto-lookup meanings for all items that are missing meaning
+      const enrichedRows = await Promise.all(
+        rawRows.map(async (row) => {
+          if (row.meaning) return row;   // already has meaning
+          try {
+            const r = await fetch(`/api/lookup?word=${encodeURIComponent(row.word)}`);
+            if (!r.ok) return row;
+            const d = await r.json() as { pinyin?: string; meaning?: string };
+            return {
+              ...row,
+              pinyin: row.pinyin || d.pinyin || "",
+              meaning: d.meaning || "",
+            };
+          } catch {
+            return row;
+          }
+        })
+      );
+
+      setRows((prev) => {
+        const filled = prev.filter((r) => r.word.trim());
+        return [...filled, ...enrichedRows];
+      });
+    } catch (e) {
+      setOcrError(e instanceof Error ? e.message : "识别失败，请重试");
+    } finally {
+      setOcrLoading(false);
+    }
   }
 
   const today = new Date().toISOString().split("T")[0];
@@ -341,15 +443,47 @@ function AddDictationForm() {
           </button>
         </Card>
 
-        {/* Photo upload placeholder */}
+        {/* Photo OCR */}
         <Card>
-          <div className="flex items-center gap-3 text-gray-400">
-            <span className="text-3xl">📷</span>
-            <div>
-              <p className="font-semibold text-gray-500">照片上传（即将推出）</p>
-              <p className="text-xs text-gray-400 mt-0.5">拍摄课本自动识别生词 · AI OCR coming soon</p>
-            </div>
-          </div>
+          <p className="text-sm font-semibold text-gray-600 mb-2">📷 拍照识别词表 AI OCR</p>
+          <p className="text-xs text-gray-400 mb-3">
+            拍摄课本词表照片，AI 自动识别生词并填入列表
+          </p>
+
+          <label className={[
+            "flex items-center justify-center gap-3 w-full rounded-2xl py-4 border-2 border-dashed cursor-pointer transition-all",
+            ocrLoading
+              ? "border-brand-300 bg-brand-50 cursor-wait"
+              : "border-gray-200 hover:border-brand-300 hover:bg-brand-50",
+          ].join(" ")}>
+            <input
+              type="file" accept="image/*" capture="environment"
+              className="sr-only"
+              disabled={ocrLoading}
+              onChange={(e) => {
+                const f = e.target.files?.[0];
+                if (f) handleOcrPhoto(f);
+                e.target.value = ""; // reset so the same file triggers again
+              }}
+            />
+            {ocrLoading ? (
+              <span className="flex items-center gap-2 text-brand-600 font-semibold text-sm">
+                <span className="w-4 h-4 border-2 border-brand-300 border-t-brand-500 rounded-full animate-spin" />
+                AI 识别中…
+              </span>
+            ) : (
+              <span className="flex items-center gap-2 text-gray-500 font-semibold text-sm">
+                <span className="text-2xl">📸</span>
+                拍照 / 选择图片
+              </span>
+            )}
+          </label>
+
+          {ocrError && (
+            <p className="text-xs text-red-500 mt-2 bg-red-50 border border-red-200 rounded-xl px-3 py-2">
+              {ocrError}
+            </p>
+          )}
         </Card>
       </div>
 

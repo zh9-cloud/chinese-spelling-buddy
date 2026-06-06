@@ -8,12 +8,12 @@ import { Badge } from "@/components/ui/Badge";
 import { AudioButton } from "@/components/student/AudioButton";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { ChildSelector } from "@/components/shared/ChildSelector";
-import { loadStore, getCoins } from "@/lib/storage";
+import { useStore } from "@/context/StoreContext";
 import { getUpcomingDictation } from "@/lib/mockData";
 
 function MistakesContent() {
   const params = useSearchParams();
-  const store = loadStore();
+  const { store, getCoins } = useStore();
   const initialChildId = params.get("child") ?? store.children[0]?.id ?? "";
   const [activeChildId, setActiveChildId] = useState(initialChildId);
 

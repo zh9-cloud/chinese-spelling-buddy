@@ -22,8 +22,15 @@ export function PinyinMeaning({ pinyin, meaning, exampleSentence, text }: Props)
 
   return (
     <div className="space-y-1.5 text-center">
-      {pinyin && !isSentence && (
-        <p className="text-2xl text-brand-500 font-medium">{pinyin}</p>
+      {pinyin && (
+        isSentence ? (
+          // Sentence pinyin: readable but compact, wraps naturally
+          <p className="text-sm leading-relaxed text-brand-400 font-medium break-words">
+            {pinyin}
+          </p>
+        ) : (
+          <p className="text-2xl text-brand-500 font-medium">{pinyin}</p>
+        )
       )}
       {meaning && (
         <p className="text-base font-bold text-gray-600">{meaning}</p>

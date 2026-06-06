@@ -8,7 +8,7 @@ import { ModeButton, IconLearn, IconTest, IconMistakes } from "@/components/stud
 import { ChildSelector } from "@/components/shared/ChildSelector";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { ProgressBar } from "@/components/ui/ProgressBar";
-import { loadStore, getCoins } from "@/lib/storage";
+import { useStore } from "@/context/StoreContext";
 import { GoldCoin } from "@/components/ui/GoldCoin";
 import { getUpcomingDictation, getDaysUntil } from "@/lib/mockData";
 
@@ -56,7 +56,7 @@ const THEMES = [
 ];
 
 export default function StudentDashboard() {
-  const store = loadStore();
+  const { store, getCoins } = useStore();
   const [activeChildId, setActiveChildId] = useState(store.children[0]?.id ?? "");
 
   const childIndex = store.children.findIndex((c) => c.id === activeChildId);
@@ -153,13 +153,19 @@ export default function StudentDashboard() {
                 size="lg"
               />
             </div>
-            <div className="mt-3">
+            <div className="mt-3 grid grid-cols-2 gap-2">
               <ModeButton
                 href={`/student/mistakes?child=${activeChildId}`}
                 icon={<IconMistakes />} label="Mistakes"
                 accentColor="bg-purple-100" iconColor="text-purple-600"
                 size="sm"
                 disabled={!hasMistakes}
+              />
+              <ModeButton
+                href={`/student/handwriting?list=${upcoming.id}&child=${activeChildId}`}
+                icon={<span className="text-xl">✍️</span>} label="AI批改"
+                accentColor="bg-rose-100" iconColor="text-rose-600"
+                size="sm"
               />
             </div>
           </div>

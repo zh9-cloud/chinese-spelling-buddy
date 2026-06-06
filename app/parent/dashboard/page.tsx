@@ -6,9 +6,8 @@ import { AppShell } from "@/components/layout/AppShell";
 import { ChildSelector } from "@/components/shared/ChildSelector";
 import { UpcomingDictationCard } from "@/components/parent/UpcomingDictationCard";
 import { EmptyState } from "@/components/ui/EmptyState";
-import { loadStore } from "@/lib/storage";
+import { useStore } from "@/context/StoreContext";
 import { getUpcomingDictation, getDaysUntil } from "@/lib/mockData";
-import { getCoins } from "@/lib/storage";
 
 // Must match the THEMES array in student/dashboard/page.tsx
 const THEMES = [
@@ -18,7 +17,7 @@ const THEMES = [
 ];
 
 export default function ParentDashboard() {
-  const store = loadStore();
+  const { store, getCoins } = useStore();
   const [activeChildId, setActiveChildId] = useState(store.children[0]?.id ?? "");
 
   const childIndex = store.children.findIndex((c) => c.id === activeChildId);

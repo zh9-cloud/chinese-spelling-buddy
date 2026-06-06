@@ -20,6 +20,8 @@ export interface Word {
   pinyin?: string;        // e.g. "xué xí"   — optional for MVP
   meaning?: string;       // English meaning  — optional for MVP
   exampleSentence?: string; // — optional for MVP
+  /** True when this item is a full sentence to be dictated as-is */
+  isSentence?: boolean;
 }
 
 export interface DictationList {
@@ -36,7 +38,7 @@ export interface DictationList {
 //  Practice session — stored locally per session
 // ─────────────────────────────────────────────
 
-export type SessionMode = "learn" | "practice" | "test";
+export type SessionMode = "learn" | "practice" | "test" | "handwriting";
 
 export interface PracticeSession {
   id: string;

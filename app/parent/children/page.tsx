@@ -4,7 +4,8 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { AppShell } from "@/components/layout/AppShell";
 import { Button } from "@/components/ui/Button";
-import { loadStore, saveChildren } from "@/lib/storage";
+import { useStore } from "@/context/StoreContext";
+import { useAuth } from "@/context/AuthContext";
 import type { Child, Grade, ChineseType } from "@/lib/types";
 
 const GRADES: Grade[] = ["P3", "P4", "P5", "P6"];
@@ -27,7 +28,9 @@ const gradeEmoji: Record<string, string> = {
 
 export default function ManageChildrenPage() {
   const router = useRouter();
-  const store = loadStore();
+  const { store, saveChildren } = useStore();
+  const { user } = useAuth();
+  const parentId = user?.id ?? "parent-1";
 
   // Always work with exactly 2 child slots
   const initial: Child[] = [0, 1].map((i) =>
@@ -37,7 +40,7 @@ export default function ManageChildrenPage() {
       name: "",
       grade: "P3" as Grade,
       chineseType: "Standard" as ChineseType,
-      parentId: "parent-1",
+      parentId,
     }
   );
 

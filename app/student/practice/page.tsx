@@ -15,13 +15,13 @@ import { Button } from "@/components/ui/Button";
 import { AudioButton } from "@/components/student/AudioButton";
 import { ProgressBar } from "@/components/ui/ProgressBar";
 import { EmptyState } from "@/components/ui/EmptyState";
-import { loadStore } from "@/lib/storage";
+import { useStore } from "@/context/StoreContext";
 
 function PracticeModeContent() {
   const params = useSearchParams();
   const listId = params.get("list") ?? "";
 
-  const store = loadStore();
+  const { store } = useStore();
   const dictation = store.dictationLists.find((d) => d.id === listId);
   const words = dictation?.words ?? [];
 
@@ -84,7 +84,7 @@ function PracticeModeContent() {
         {/* ── Hidden word panel ── */}
         <Card className="text-center py-10">
           <p className="text-sm font-semibold text-gray-400 mb-4 uppercase tracking-wide">
-            听一听，想一想这是哪个词？
+            {current.isSentence ? "听一听，想一想这句话怎么写？" : "听一听，想一想这是哪个词？"}
           </p>
 
           {/* Audio button — the primary interaction */}
@@ -96,24 +96,38 @@ function PracticeModeContent() {
             <div className="animate-pulse-once">
               <p
                 className="font-bold text-brand-600 cjk"
-                style={{ fontSize: "clamp(3rem, 18vw, 5.5rem)", lineHeight: 1.1 }}
+                style={{
+                  fontSize: current.isSentence
+                    ? `${Math.max(1.5, 9.5 / Math.sqrt(current.word.length)).toFixed(2)}rem`
+                    : "clamp(3rem, 18vw, 5.5rem)",
+                  lineHeight: 1.3,
+                }}
               >
                 {current.word}
               </p>
               {current.pinyin && (
-                <p className="text-xl text-gray-500 mt-2">{current.pinyin}</p>
+                current.isSentence
+                  ? <p className="text-sm leading-relaxed text-brand-400 font-medium mt-2 break-words">{current.pinyin}</p>
+                  : <p className="text-xl text-gray-500 mt-2">{current.pinyin}</p>
               )}
               {current.meaning && (
-                <p className="text-sm text-gray-400 mt-1">{current.meaning}</p>
+                <p className="text-sm font-bold text-gray-600 mt-1">{current.meaning}</p>
               )}
             </div>
           ) : (
             <div
               className="font-bold text-gray-200 cjk select-none"
-              style={{ fontSize: "clamp(3rem, 18vw, 5.5rem)", lineHeight: 1.1 }}
+              style={{
+                fontSize: current.isSentence
+                  ? `${Math.max(1.5, 9.5 / Math.sqrt(current.word.length)).toFixed(2)}rem`
+                  : "clamp(3rem, 18vw, 5.5rem)",
+                lineHeight: 1.3,
+              }}
               aria-hidden
             >
-              {"？".repeat(current.word.length)}
+              {current.isSentence
+                ? "＿".repeat(Math.min(current.word.length, 20))
+                : "？".repeat(current.word.length)}
             </div>
           )}
         </Card>

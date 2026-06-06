@@ -9,26 +9,31 @@ import { PinyinMeaning } from "@/components/student/PinyinMeaning";
 import { ProgressBar } from "@/components/ui/ProgressBar";
 import { Badge } from "@/components/ui/Badge";
 import { EmptyState } from "@/components/ui/EmptyState";
-import { loadStore, saveSession, addMistake, addCoins, newId } from "@/lib/storage";
+import { useStore } from "@/context/StoreContext";
 import { GoldCoin } from "@/components/ui/GoldCoin";
 import type { WordResult } from "@/lib/types";
 
 type WordStatus = "pending" | "revealed" | "correct" | "wrong";
 
-// Shrinks font for longer words and sentences so they always fit the fixed area
-function wordFontSize(text: string): string {
+// Smooth sqrt-based scaling for sentences; fixed steps for words
+function wordFontSize(text: string, isSentence?: boolean): string {
+  if (isSentence) {
+    // 8 chars → ~3.4rem, 12 → 2.7rem, 16 → 2.4rem, 20 → 2.1rem, 30 → 1.7rem
+    const rem = Math.max(1.5, 9.5 / Math.sqrt(text.length));
+    return `${rem.toFixed(2)}rem`;
+  }
   const len = text.length;
   if (len <= 2) return "clamp(3.5rem, 18vw, 5.5rem)";
   if (len <= 4) return "clamp(2.5rem, 12vw, 4rem)";
   if (len <= 6) return "clamp(2rem,  9vw, 3rem)";
-  return "clamp(1.1rem, 4.5vw, 1.5rem)"; // sentences
+  return "clamp(1.5rem, 6vw, 2rem)";
 }
 
 function TestModeContent() {
   const params = useSearchParams();
   const listId = params.get("list") ?? "";
 
-  const store = loadStore();
+  const { store, saveSession, addMistake, addCoins, newId } = useStore();
   const dictation = store.dictationLists.find((d) => d.id === listId);
   // Identify the child from the dictation's childId, not always index 0
   const child = store.children.find((c) => c.id === dictation?.childId) ?? store.children[0];
@@ -233,16 +238,16 @@ function TestModeContent() {
         {/* ── Unified word card ── */}
         <div className="flex-1 min-h-0 bg-gradient-to-br from-brand-400 to-brand-600 rounded-3xl shadow-lg overflow-hidden flex flex-col">
 
-          {/* 1. Orange area: 2/3 — blank when pending, character after 不会 */}
-          <div className="relative flex-[2] min-h-0 flex items-center justify-center px-6">
+          {/* 1. Orange area — blank underscores when pending, answer revealed after 不会 */}
+          <div className={["relative min-h-0 flex items-center justify-center px-6", current.isSentence ? "flex-[3]" : "flex-[2]"].join(" ")}>
             {currentStatus === "pending" ? (
-              <span className="font-bold text-white/30 cjk select-none"
-                style={{ fontSize: wordFontSize(current.word), lineHeight: 1 }}>
-                {"＿".repeat(current.word.length)}
+              <span className="font-bold text-white/30 cjk select-none text-center"
+                style={{ fontSize: wordFontSize(current.word, current.isSentence), lineHeight: 1.3 }}>
+                {"＿".repeat(Math.min(current.word.length, 20))}
               </span>
             ) : (
-              <span className="text-white font-bold leading-tight cjk text-center"
-                style={{ fontSize: wordFontSize(current.word) }}>
+              <span className="text-white font-bold leading-snug cjk text-center"
+                style={{ fontSize: wordFontSize(current.word, current.isSentence) }}>
                 {current.word}
               </span>
             )}
@@ -251,8 +256,11 @@ function TestModeContent() {
             </div>
           </div>
 
-          {/* 3. White area: 1/3 */}
-          <div className="flex-[1] min-h-0 bg-white px-6 pt-4 pb-3 flex flex-col justify-between">
+          {/* White area: sentences get extra height for long pinyin */}
+          <div className={[
+            "min-h-0 bg-white px-6 pt-4 pb-3 flex flex-col justify-between",
+            current.isSentence ? "flex-[2] overflow-y-auto" : "flex-[1]",
+          ].join(" ")}>
             <PinyinMeaning pinyin={current.pinyin} meaning={current.meaning} text={current.word} />
 
             <div className="mt-3">
