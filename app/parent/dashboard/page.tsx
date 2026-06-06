@@ -7,7 +7,7 @@ import { ChildSelector } from "@/components/shared/ChildSelector";
 import { UpcomingDictationCard } from "@/components/parent/UpcomingDictationCard";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { useStore } from "@/context/StoreContext";
-import { getUpcomingDictation, getDaysUntil } from "@/lib/mockData";
+import { getUpcomingDictation, weekdayLabel } from "@/lib/mockData";
 
 // Must match the THEMES array in student/dashboard/page.tsx
 const THEMES = [
@@ -17,8 +17,14 @@ const THEMES = [
 ];
 
 export default function ParentDashboard() {
-  const { store, getCoins } = useStore();
+  const { store, getCoins, deleteDictationList } = useStore();
   const [activeChildId, setActiveChildId] = useState(store.children[0]?.id ?? "");
+
+  function handleDelete(id: string, title: string) {
+    if (confirm(`确定删除「${title}」吗？此操作不可撤销。`)) {
+      deleteDictationList(id);
+    }
+  }
 
   const childIndex = store.children.findIndex((c) => c.id === activeChildId);
   const theme = THEMES[Math.max(0, childIndex) % THEMES.length];
@@ -126,14 +132,24 @@ export default function ParentDashboard() {
         <section>
           <div className="flex items-center justify-between mb-3">
             <h2 className="text-xs font-bold text-gray-400 uppercase tracking-wide">即将到来的听写 Upcoming</h2>
-            <Link href="/parent/add-dictation"
-              className="text-sm text-brand-600 font-semibold hover:text-brand-700">
-              ＋ 添加
-            </Link>
+            <div className="flex items-center gap-3">
+              <Link href="/parent/import"
+                className="text-sm text-brand-600 font-semibold hover:text-brand-700">
+                📷 智能导入
+              </Link>
+              <Link href="/parent/add-dictation"
+                className="text-sm text-brand-600 font-semibold hover:text-brand-700">
+                ✏️ 手动添加
+              </Link>
+            </div>
           </div>
 
           {upcoming ? (
-            <UpcomingDictationCard dictation={upcoming} accentBorder={theme.cardBorder} />
+            <UpcomingDictationCard
+              dictation={upcoming}
+              accentBorder={theme.cardBorder}
+              onDelete={() => handleDelete(upcoming.id, upcoming.title)}
+            />
           ) : (
             <EmptyState
               icon="📅"
@@ -155,51 +171,60 @@ export default function ParentDashboard() {
             <h2 className="text-xs font-bold text-gray-400 uppercase tracking-wide mb-2">全部听写列表 All Lists</h2>
             <div className="bg-white rounded-2xl border border-gray-100 divide-y divide-gray-100 overflow-hidden">
               {futureDictations.map((d) => {
-                const days = getDaysUntil(d.dictationDate);
+                const preview = d.words.map((w) => w.word).join("　");
                 return (
-                  <div key={d.id} className="flex items-center gap-3 px-4 py-2.5">
+                  <div key={d.id} className="flex items-center gap-3 px-4 py-3">
                     <div className={`w-2 h-2 rounded-full shrink-0 ${theme.cardBorder.replace("border-", "bg-")}`} />
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-semibold text-gray-700 truncate cjk">{d.title}</p>
-                      <p className="text-xs text-gray-400">{d.dictationDate} · {d.words.length} 词</p>
+                      <p className="text-xs text-gray-400 mt-0.5">{d.dictationDate} {weekdayLabel(d.dictationDate)} · {d.words.length} 词</p>
+                      {preview && (
+                        <p className="text-xs text-gray-800 mt-1 truncate cjk tracking-wide">{preview}</p>
+                      )}
                     </div>
-                    <span className={`text-xs font-bold shrink-0 ${days <= 2 ? "text-red-500" : days <= 5 ? "text-brand-500" : "text-jade-600"}`}>
-                      {days === 0 ? "今天" : days < 0 ? "已过期" : `${days}天`}
-                    </span>
-                    <Link href={`/parent/add-dictation?edit=${d.id}`}
-                      className="text-xs font-semibold text-gray-400 hover:text-gray-600 shrink-0 ml-1">
-                      编辑
-                    </Link>
+                    <div className="flex items-center gap-3 shrink-0">
+                      <Link href={`/parent/add-dictation?edit=${d.id}`}
+                        className="text-sm font-semibold text-gray-400 hover:text-brand-600">
+                        Edit
+                      </Link>
+                      <button onClick={() => handleDelete(d.id, d.title)}
+                        className="text-sm font-semibold text-gray-400 hover:text-red-500">
+                        Delete
+                      </button>
+                    </div>
                   </div>
                 );
               })}
-              {pastDictations.map((d) => (
-                <div key={d.id} className="flex items-center gap-3 px-4 py-2.5 opacity-50">
-                  <div className="w-2 h-2 rounded-full shrink-0 bg-gray-300" />
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-gray-500 truncate cjk">{d.title}</p>
-                    <p className="text-xs text-gray-400">{d.dictationDate} · {d.words.length} 词</p>
+              {pastDictations.map((d) => {
+                const preview = d.words.map((w) => w.word).join("　");
+                return (
+                  <div key={d.id} className="flex items-center gap-3 px-4 py-3 opacity-60">
+                    <div className="w-2 h-2 rounded-full shrink-0 bg-gray-300" />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-gray-500 truncate cjk">{d.title}</p>
+                      <p className="text-xs text-gray-400 mt-0.5">{d.dictationDate} {weekdayLabel(d.dictationDate)} · {d.words.length} 词</p>
+                      {preview && (
+                        <p className="text-xs text-gray-400 mt-1 truncate cjk tracking-wide">{preview}</p>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-3 shrink-0">
+                      <Link href={`/parent/add-dictation?edit=${d.id}`}
+                        className="text-sm font-semibold text-gray-400 hover:text-brand-600">
+                        Edit
+                      </Link>
+                      <button onClick={() => handleDelete(d.id, d.title)}
+                        className="text-sm font-semibold text-gray-400 hover:text-red-500">
+                        Delete
+                      </button>
+                    </div>
                   </div>
-                  <span className="text-xs text-gray-400 shrink-0">已过期</span>
-                  <Link href={`/parent/add-dictation?edit=${d.id}`}
-                    className="text-xs font-semibold text-gray-400 hover:text-gray-600 shrink-0 ml-1">
-                    编辑
-                  </Link>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </section>
         )}
 
-        <div className="h-20" />
-      </div>
-
-      {/* Floating add button */}
-      <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 max-w-md w-full px-4">
-        <Link href="/parent/add-dictation"
-          className={`flex items-center justify-center gap-2 w-full text-white font-bold text-base rounded-2xl py-4 shadow-xl transition-all duration-150 active:scale-95 ${theme.add}`}>
-          ＋ 添加听写列表 Add List
-        </Link>
+        <div className="h-4" />
       </div>
     </AppShell>
   );

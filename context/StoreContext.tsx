@@ -123,6 +123,13 @@ async function upsertDictationList(list: DictationList) {
   }, { onConflict: "id" });
 }
 
+async function deleteDictationListFromSupabase(id: string) {
+  const sb = getSupabase();
+  if (!sb) return;
+  // Cascade (set up in the schema) removes related sessions/mistakes.
+  await sb.from("dictation_lists").delete().eq("id", id);
+}
+
 async function upsertSession(session: PracticeSession) {
   const sb = getSupabase();
   if (!sb) return;
@@ -159,6 +166,7 @@ interface StoreContextValue {
   saveChildren: (children: Child[]) => void;
   addDictationList: (list: DictationList) => void;
   updateDictationList: (list: DictationList) => void;
+  deleteDictationList: (id: string) => void;
   saveSession: (session: PracticeSession) => void;
   addMistake: (entry: MistakeEntry) => void;
   getCoins: (childId: string) => number;
@@ -264,6 +272,15 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     });
   }, []);
 
+  const deleteDictationList = useCallback((id: string) => {
+    setStore((prev) => {
+      const next = { ...prev, dictationLists: prev.dictationLists.filter((d) => d.id !== id) };
+      saveStore(next);
+      if (userRef.current) deleteDictationListFromSupabase(id).catch(console.error);
+      return next;
+    });
+  }, []);
+
   const saveSession = useCallback((session: PracticeSession) => {
     setStore((prev) => {
       const next = { ...prev, sessions: [...prev.sessions, session] };
@@ -320,6 +337,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       saveChildren,
       addDictationList,
       updateDictationList,
+      deleteDictationList,
       saveSession,
       addMistake,
       getCoins,

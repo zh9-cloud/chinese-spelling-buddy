@@ -138,3 +138,12 @@ export function getDaysUntil(dateStr: string): number {
   target.setHours(0, 0, 0, 0);
   return Math.round((target.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
 }
+
+// "YYYY-MM-DD" → "星期五 Fri" (Chinese + English weekday)
+export function weekdayLabel(dateStr: string): string {
+  const zh = ["星期日", "星期一", "星期二", "星期三", "星期四", "星期五", "星期六"];
+  const en = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+  const d = new Date(`${dateStr}T00:00:00`);
+  if (isNaN(d.getTime())) return "";
+  return `${zh[d.getDay()]} ${en[d.getDay()]}`;
+}

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, Suspense } from "react";
+import { useState, useRef, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { AppShell } from "@/components/layout/AppShell";
 import { Button } from "@/components/ui/Button";
@@ -48,6 +48,21 @@ function TestModeContent() {
   // Start at 1 so the first word auto-plays on mount
   const [playTrigger, setPlayTrigger] = useState(1);
   const sessionId = useRef(newId());
+  // Guard so coins are awarded exactly once per completed test (not on every re-render)
+  const coinsAwardedRef = useRef(false);
+
+  useEffect(() => {
+    if (finished) {
+      if (!coinsAwardedRef.current) {
+        coinsAwardedRef.current = true;
+        const correct = statuses.filter((s) => s === "correct").length;
+        if (child?.id && correct > 0) addCoins(child.id, correct);
+      }
+    } else {
+      coinsAwardedRef.current = false; // reset so a retry awards again
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [finished]);
 
   const current = words[index];
   const currentStatus = statuses[index];
@@ -130,9 +145,7 @@ function TestModeContent() {
     const score = Math.round((correct / words.length) * 100);
     const emoji = score === 100 ? "🏆" : score >= 80 ? "🌟" : score >= 60 ? "😊" : "💪";
     const coinsEarned = correct;
-
-    // Award coins (persisted to localStorage)
-    if (child?.id) addCoins(child.id, coinsEarned);
+    // NOTE: coins are awarded in the useEffect above (once), not here in render.
 
     function handleShare() {
       const text = `我在 Chinese Spelling Buddy 答对了 ${correct}/${words.length} 个词，得了 ${score} 分！${emoji}`;

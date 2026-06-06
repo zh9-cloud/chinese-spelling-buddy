@@ -41,7 +41,16 @@ export function loadStore(): AppStore {
 
 export function saveStore(store: AppStore): void {
   if (typeof window === "undefined") return;
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(store));
+  // Preserve the `coins` field (kept alongside the store but not part of AppStore),
+  // otherwise saving a session/mistake would wipe a child's coin balance.
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    const prev = raw ? (JSON.parse(raw) as { coins?: Record<string, number> }) : {};
+    const merged = { ...store, coins: prev.coins ?? {} };
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(merged));
+  } catch {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(store));
+  }
 }
 
 // ── Children ────────────────────────────────

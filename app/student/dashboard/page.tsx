@@ -10,7 +10,7 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { ProgressBar } from "@/components/ui/ProgressBar";
 import { useStore } from "@/context/StoreContext";
 import { GoldCoin } from "@/components/ui/GoldCoin";
-import { getUpcomingDictation, getDaysUntil } from "@/lib/mockData";
+import { getUpcomingDictation, getDaysUntil, weekdayLabel } from "@/lib/mockData";
 
 // Soft, calming colour palette — one theme per child slot
 const THEMES = [
@@ -116,7 +116,8 @@ export default function StudentDashboard() {
           />
         </div>
 
-        {/* Current task card */}
+        {/* Section 1: Upcoming */}
+        <h2 className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">即将到来的听写 Upcoming</h2>
         {upcoming ? (
           <div className={`${theme.cardBg} ${theme.cardBorder} rounded-2xl shadow-sm p-4 mb-4`}>
             <div className="flex items-start justify-between gap-2 mb-3">
@@ -172,61 +173,69 @@ export default function StudentDashboard() {
         )}
       </div>
 
-      {/* Dictation list — excludes the card already shown above */}
-      {allDictations.length > 0 && (
-        <section className="space-y-4">
-          <h2 className="text-xs font-bold text-gray-400 uppercase tracking-wide">其他听写列表</h2>
-
-          <div className="space-y-2">
-            {futureDictations.map((d) => {
-              const dDays = getDaysUntil(d.dictationDate);
-              return (
-                <div key={d.id} className={`bg-white border ${theme.listBorder} rounded-2xl px-4 py-3 shadow-sm`}>
-                  <div className="flex items-start justify-between gap-2 mb-2">
-                    <div className="flex-1 min-w-0">
-                      <p className="font-semibold text-gray-800 text-sm cjk">{d.title}</p>
-                      <p className="text-xs text-gray-400 mt-0.5">{d.dictationDate} · {d.words.length} 个词</p>
-                    </div>
-                    <Badge variant={dDays <= 2 ? "red" : dDays <= 5 ? "orange" : "green"}>
-                      {dDays === 0 ? "今天" : `还有 ${dDays} 天`}
-                    </Badge>
+      {/* Section 2: All (other upcoming) lists */}
+      {futureDictations.length > 0 && (
+        <section className="space-y-2 mb-6">
+          <h2 className="text-xs font-bold text-gray-400 uppercase tracking-wide">其他听写 More Lists</h2>
+          {futureDictations.map((d) => {
+            const preview = d.words.map((w) => w.word).join("　");
+            return (
+              <div key={d.id} className={`bg-white border ${theme.listBorder} rounded-2xl px-4 py-3 shadow-sm`}>
+                <div className="flex items-center justify-between gap-3">
+                  <div className="min-w-0 flex-1">
+                    <p className="font-semibold text-gray-800 text-sm cjk truncate">{d.title}</p>
+                    <p className="text-xs text-gray-400 mt-0.5">{d.dictationDate} {weekdayLabel(d.dictationDate)} · {d.words.length} 个词</p>
+                    {preview && (
+                      <p className="text-xs text-gray-800 mt-1.5 truncate cjk tracking-wide">{preview}</p>
+                    )}
                   </div>
-                  <div className="grid grid-cols-2 gap-2">
+                  <div className="flex items-center gap-3 shrink-0">
                     <Link href={`/student/learn?list=${d.id}`}
-                      className={`text-center text-xs font-bold ${theme.learnIcon} ${theme.learnBg} hover:opacity-80 active:scale-95 transition-all rounded-xl py-2`}>
+                      className={`text-sm font-bold ${theme.learnIcon} hover:opacity-70 active:scale-95 transition-all`}>
                       Learn
                     </Link>
                     <Link href={`/student/test?list=${d.id}`}
-                      className={`text-center text-xs font-bold ${theme.testIcon} ${theme.testBg} hover:opacity-80 active:scale-95 transition-all rounded-xl py-2`}>
+                      className={`text-sm font-bold ${theme.testIcon} hover:opacity-70 active:scale-95 transition-all`}>
                       Test
                     </Link>
                   </div>
                 </div>
-              );
-            })}
+              </div>
+            );
+          })}
+        </section>
+      )}
 
-            {pastDictations.map((d) => (
+      {/* Section 3: Completed / past */}
+      {pastDictations.length > 0 && (
+        <section className="space-y-2">
+          <h2 className="text-xs font-bold text-gray-400 uppercase tracking-wide">已经完成的 Past</h2>
+          {pastDictations.map((d) => {
+            const preview = d.words.map((w) => w.word).join("　");
+            return (
               <div key={d.id} className="bg-gray-50 border border-gray-100 rounded-2xl px-4 py-3">
-                <div className="flex items-start justify-between gap-2 mb-2">
-                  <div className="flex-1 min-w-0">
-                    <p className="font-medium text-gray-400 text-sm cjk">{d.title}</p>
-                    <p className="text-xs text-gray-300 mt-0.5">{d.dictationDate} · {d.words.length} 个词</p>
+                <div className="flex items-center justify-between gap-3">
+                  <div className="min-w-0 flex-1">
+                    <p className="font-medium text-gray-400 text-sm cjk truncate">{d.title}</p>
+                    <p className="text-xs text-gray-300 mt-0.5">{d.dictationDate} {weekdayLabel(d.dictationDate)} · {d.words.length} 个词</p>
+                    {preview && (
+                      <p className="text-xs text-gray-400 mt-1.5 truncate cjk tracking-wide">{preview}</p>
+                    )}
                   </div>
-                  <Badge variant="gray">已过期</Badge>
-                </div>
-                <div className="grid grid-cols-2 gap-2">
-                  <Link href={`/student/learn?list=${d.id}`}
-                    className="text-center text-xs font-bold text-gray-400 bg-gray-100 hover:bg-gray-200 active:scale-95 transition-all rounded-xl py-2">
-                    Learn
-                  </Link>
-                  <Link href={`/student/test?list=${d.id}`}
-                    className="text-center text-xs font-bold text-gray-400 bg-gray-100 hover:bg-gray-200 active:scale-95 transition-all rounded-xl py-2">
-                    Test
-                  </Link>
+                  <div className="flex items-center gap-3 shrink-0">
+                    <Link href={`/student/learn?list=${d.id}`}
+                      className="text-sm font-bold text-gray-400 hover:opacity-70 active:scale-95 transition-all">
+                      Learn
+                    </Link>
+                    <Link href={`/student/test?list=${d.id}`}
+                      className="text-sm font-bold text-gray-400 hover:opacity-70 active:scale-95 transition-all">
+                      Test
+                    </Link>
+                  </div>
                 </div>
               </div>
-            ))}
-          </div>
+            );
+          })}
         </section>
       )}
 

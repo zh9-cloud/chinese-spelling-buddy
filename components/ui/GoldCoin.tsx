@@ -1,31 +1,26 @@
 "use client";
 
-// A small gold star badge used as the "coin" reward unit.
-// Using ★ (solid star) with amber gold styling — clearly gold, not a grey moon coin.
+// The reward-unit icon used throughout the app: a diamond 💎.
+// Rendered larger than text with a blue glow so it reads as a prize, not decoration.
 
 interface GoldCoinProps {
   size?: "sm" | "md" | "lg";
 }
 
 const sizes = {
-  sm: "w-5 h-5 text-xs",
-  md: "w-7 h-7 text-sm",
-  lg: "w-9 h-9 text-base",
+  sm: "text-2xl",
+  md: "text-4xl",
+  lg: "text-6xl",
 };
 
 export function GoldCoin({ size = "md" }: GoldCoinProps) {
   return (
     <span
-      className={`${sizes[size]} inline-flex items-center justify-center rounded-full font-black`}
-      style={{
-        background: "linear-gradient(135deg, #fbbf24 0%, #f59e0b 60%, #d97706 100%)",
-        color: "#fff",
-        textShadow: "0 1px 2px rgba(0,0,0,0.2)",
-        boxShadow: "0 1px 4px rgba(245,158,11,0.4)",
-      }}
-      aria-label="gold coin"
+      className={`${sizes[size]} inline-flex items-center justify-center leading-none align-middle`}
+      style={{ filter: "drop-shadow(0 1px 4px rgba(56,189,248,0.6))" }}
+      aria-label="diamond reward"
     >
-      ★
+      💎
     </span>
   );
 }

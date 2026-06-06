@@ -63,35 +63,33 @@ export function ChildSelector({ childList, activeChildId, onSelect, coinsByChild
             key={child.id}
             onClick={() => onSelect(child.id)}
             className={[
-              "rounded-2xl p-4 text-left transition-all duration-150",
+              "rounded-2xl px-4 py-3 text-left transition-all duration-150",
               "active:scale-[0.97] focus:outline-none",
               active
                 ? `${t.activeBg} shadow-lg ring-2 ${t.ring} ring-offset-1`
                 : `${t.inactiveBg} border border-gray-100 hover:shadow-md`,
             ].join(" ")}
           >
-            {/* Grade pill — top right */}
-            <div className="flex justify-end mb-2">
+            {/* Name + grade pill on one row — keeps the card compact */}
+            <div className="flex items-center justify-between gap-2">
+              <p className={`font-bold text-xl tracking-tight leading-tight truncate ${active ? t.activeText : t.inactiveText}`}>
+                {child.name}
+              </p>
               <span className={[
-                "text-xs font-bold px-2 py-0.5 rounded-full",
+                "shrink-0 text-xs font-bold px-2 py-0.5 rounded-full",
                 active ? t.gradeBg : t.inactiveGradeBg,
               ].join(" ")}>
                 {child.grade}
               </span>
             </div>
 
-            {/* Name */}
-            <p className={`font-black text-lg leading-tight truncate ${active ? t.activeText : t.inactiveText}`}>
-              {child.name}
-            </p>
-
             {/* Course type + coins */}
-            <div className="flex items-center justify-between mt-0.5">
+            <div className="flex items-center justify-between mt-1">
               <p className={`text-xs font-semibold ${active ? "text-white/80" : "text-gray-400"}`}>
                 {chineseTypeLabel(child.chineseType)}
               </p>
               {(coinsByChildId[child.id] ?? 0) > 0 && (
-                <span className={`flex items-center gap-1 text-xs font-black ${active ? "text-white" : "text-amber-600"}`}>
+                <span className={`flex items-center gap-1 text-sm font-black ${active ? "text-white" : "text-amber-600"}`}>
                   <GoldCoin size="sm" />
                   {coinsByChildId[child.id]}
                 </span>

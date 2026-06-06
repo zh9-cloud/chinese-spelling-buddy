@@ -1,12 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import { getDaysUntil } from "@/lib/mockData";
+import { getDaysUntil, weekdayLabel } from "@/lib/mockData";
 import type { DictationList } from "@/lib/types";
 
 interface Props {
   dictation: DictationList;
   accentBorder?: string;
+  onDelete?: () => void;
 }
 
 function DaysBadge({ days }: { days: number }) {
@@ -29,17 +30,17 @@ function DaysBadge({ days }: { days: number }) {
   );
 }
 
-export function UpcomingDictationCard({ dictation, accentBorder = "border-amber-400" }: Props) {
+export function UpcomingDictationCard({ dictation, accentBorder = "border-amber-400", onDelete }: Props) {
   const days = getDaysUntil(dictation.dictationDate);
+  const preview = dictation.words.map((w) => w.word).join("　");
 
   return (
     <div className={`bg-white rounded-2xl shadow-sm border border-gray-100 border-l-4 ${accentBorder} px-4 py-3`}>
-      {/* Single row: title + badge + edit */}
       <div className="flex items-center gap-2">
         <div className="flex-1 min-w-0">
           <p className="font-semibold text-gray-800 truncate text-sm cjk">{dictation.title}</p>
           <p className="text-xs text-gray-400 mt-0.5">
-            {dictation.dictationDate} · {dictation.words.length} 个词
+            {dictation.dictationDate} {weekdayLabel(dictation.dictationDate)} · {dictation.words.length} 个词
           </p>
         </div>
         <DaysBadge days={days} />
@@ -47,9 +48,20 @@ export function UpcomingDictationCard({ dictation, accentBorder = "border-amber-
           href={`/parent/add-dictation?edit=${dictation.id}`}
           className="text-xs font-semibold text-gray-400 hover:text-brand-600 transition-colors shrink-0 ml-1"
         >
-          编辑
+          Edit
         </Link>
+        {onDelete && (
+          <button
+            onClick={onDelete}
+            className="text-xs font-semibold text-gray-400 hover:text-red-500 transition-colors shrink-0"
+          >
+            Delete
+          </button>
+        )}
       </div>
+      {preview && (
+        <p className="text-xs text-gray-800 mt-1.5 truncate cjk tracking-wide">{preview}</p>
+      )}
     </div>
   );
 }
