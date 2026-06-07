@@ -18,6 +18,9 @@ import { NextRequest, NextResponse } from "next/server";
 import OpenAI from "openai";
 import { prepareImageForOpenAI } from "@/lib/convertImage";
 
+// GPT-4o vision can take 15–40s; raise the serverless timeout (Vercel Hobby max = 60s).
+export const maxDuration = 60;
+
 function buildSystemPrompt(expectedWords: string[]): string {
   const wordList = expectedWords.map((w, i) => `${i + 1}. ${w}`).join("\n");
   return `你是一个严格但公平的新加坡小学华文听写批改助手。

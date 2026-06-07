@@ -13,6 +13,9 @@ import { NextRequest, NextResponse } from "next/server";
 import OpenAI from "openai";
 import { prepareImageForOpenAI } from "@/lib/convertImage";
 
+// GPT-4o vision can take 15–40s; raise the serverless timeout (Vercel Hobby max = 60s).
+export const maxDuration = 60;
+
 const SYSTEM_PROMPT = `你是一个专门识别新加坡小学华文听写词表的 AI 助手。
 
 听写词表有两种项目：
