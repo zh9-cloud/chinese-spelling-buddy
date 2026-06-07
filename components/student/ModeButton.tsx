@@ -25,12 +25,12 @@ export function ModeButton({
 }: ModeButtonProps) {
   const padding   = size === "lg" ? "py-5 px-4"   : "py-2.5 px-4";
   const iconSize  = size === "lg" ? "w-10 h-10"   : "w-7 h-7";
-  const iconRound = size === "lg" ? "rounded-xl"  : "rounded-lg";
+  const iconRound = size === "lg" ? "rounded-lg"  : "rounded-md";
   const textSize  = size === "lg" ? "text-base"   : "text-sm";
 
   const inner = (
     <div className={[
-      `flex items-center gap-3 rounded-2xl ${padding} transition-all duration-150`,
+      `flex items-center gap-3 rounded-lg ${padding} transition-all duration-150 h-full`,
       "border border-gray-100 bg-white shadow-sm",
       disabled
         ? "opacity-40 cursor-not-allowed"
@@ -49,7 +49,7 @@ export function ModeButton({
   );
 
   if (disabled) return inner;
-  return <Link href={href}>{inner}</Link>;
+  return <Link href={href} className="block h-full">{inner}</Link>;
 }
 
 // ── Preset icons ────────────────────────────────────────────────────────────

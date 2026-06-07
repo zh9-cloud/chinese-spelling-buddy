@@ -29,7 +29,7 @@ function MistakesContent() {
     .sort((a, b) => b.wrongCount - a.wrongCount);
 
   return (
-    <AppShell title="错字本 📚" backHref="/student/dashboard">
+    <AppShell title="错字本 Mistakes 📚" backHref="/student/dashboard">
       <div className="space-y-4 page-enter">
 
         {store.children.length > 1 && (
@@ -43,7 +43,7 @@ function MistakesContent() {
 
         {activeDictation && (
           <p className="text-xs text-gray-400 px-1">
-            当前练习：
+            当前练习 Current：
             <span className="font-semibold text-gray-500 cjk">{activeDictation.title}</span>
             <span className="ml-1">（{activeDictation.words.length} 词）</span>
           </p>
@@ -52,26 +52,26 @@ function MistakesContent() {
         {!activeDictation ? (
           <EmptyState
             icon="📅"
-            title="暂无听写任务"
-            description="等待家长添加听写列表后再来练习吧！"
+            title="暂无听写任务 No tasks yet"
+            description="等待家长添加听写列表后再来练习吧！Ask a parent to add a list."
           />
         ) : mistakes.length === 0 ? (
           <EmptyState
             icon="🎉"
-            title="错字本是空的！"
-            description="太棒了！这份听写没有写错过任何字。继续加油！"
+            title="错字本是空的！All clear!"
+            description="太棒了！这份听写没有写错过任何字。继续加油！No mistakes on this list — great job!"
           />
         ) : (
           <>
             <p className="text-sm text-gray-500 px-1">
-              共 {mistakes.length} 个需要复习的字 · 从错误最多的开始
+              共 {mistakes.length} 个需要复习的字 · {mistakes.length} words to review
             </p>
 
             <div className="space-y-3">
               {mistakes.map((entry) => (
                 <Card key={entry.wordId} accent={entry.wrongCount >= 3 ? "red" : "orange"}>
                   <div className="flex items-center gap-4">
-                    <div className="shrink-0 w-16 h-16 bg-brand-50 rounded-2xl flex items-center justify-center">
+                    <div className="shrink-0 w-16 h-16 bg-brand-50 rounded-lg flex items-center justify-center">
                       <span className="text-3xl font-bold text-brand-600 cjk">
                         {entry.word}
                       </span>

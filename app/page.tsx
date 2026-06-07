@@ -60,19 +60,8 @@ export default function LandingPage() {
 
           {/* Parent section */}
           <div className="space-y-2">
-            <Link href="/parent/dashboard"
-              className="flex items-center justify-center gap-3 w-full rounded-2xl py-4 transition-all duration-150 active:scale-95 bg-brand-500 hover:bg-brand-600 shadow-lg shadow-brand-200 text-white">
-              <span className="text-2xl">👨‍👧</span>
-              <span style={{ fontSize: "1.05rem", fontWeight: 600 }}>家长</span>
-              <span style={{ fontSize: "1.05rem", fontWeight: 900, letterSpacing: "0.02em" }}>
-                Parent
-              </span>
-              {!authLoading && user && (
-                <span className="text-xs opacity-70 truncate max-w-[8rem]">{user.email}</span>
-              )}
-            </Link>
 
-            {/* Auth sub-row: shown only when Supabase is configured */}
+            {/* Auth row — ABOVE the Parent button (login first) */}
             {supabaseOn && (
               !authLoading && user ? (
                 <button
@@ -94,10 +83,23 @@ export default function LandingPage() {
                 </div>
               )
             )}
+
+            {/* Parent button */}
+            <Link href="/parent/dashboard"
+              className="flex items-center justify-center gap-3 w-full rounded-lg py-4 transition-all duration-150 active:scale-95 bg-brand-500 hover:bg-brand-600 shadow-lg shadow-brand-200 text-white">
+              <span className="text-2xl">👨‍👧</span>
+              <span style={{ fontSize: "1.05rem", fontWeight: 600 }}>家长</span>
+              <span style={{ fontSize: "1.05rem", fontWeight: 900, letterSpacing: "0.02em" }}>
+                Parent
+              </span>
+              {!authLoading && user && (
+                <span className="text-xs opacity-70 truncate max-w-[7rem]">{user.email}</span>
+              )}
+            </Link>
           </div>
 
           <Link href="/student/dashboard"
-            className="flex items-center justify-center gap-3 w-full rounded-2xl py-4 transition-all duration-150 active:scale-95 bg-jade-500 hover:bg-jade-600 shadow-lg shadow-jade-200 text-white">
+            className="flex items-center justify-center gap-3 w-full rounded-lg py-4 transition-all duration-150 active:scale-95 bg-jade-500 hover:bg-jade-600 shadow-lg shadow-jade-200 text-white">
             <span className="text-2xl">🧒</span>
             <span style={{ fontSize: "1.05rem", fontWeight: 600 }}>学生</span>
             <span style={{ fontSize: "1.05rem", fontWeight: 900, letterSpacing: "0.02em" }}>Student</span>

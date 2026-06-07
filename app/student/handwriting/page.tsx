@@ -38,7 +38,7 @@ function ListPicker({ childId, onSelect }: { childId: string; onSelect: (listId:
 
   if (!lists.length) {
     return (
-      <EmptyState icon="📋" title="暂无听写列表" description="请家长先添加听写列表" />
+      <EmptyState icon="📋" title="暂无听写列表 No lists" description="请家长先添加听写列表 · Ask a parent to add a list" />
     );
   }
 
@@ -47,7 +47,7 @@ function ListPicker({ childId, onSelect }: { childId: string; onSelect: (listId:
       {lists.map((d) => (
         <button key={d.id}
           onClick={() => onSelect(d.id)}
-          className="w-full text-left bg-white border border-gray-200 rounded-2xl px-4 py-3 hover:border-brand-300 hover:bg-brand-50 transition-all active:scale-[0.98]">
+          className="w-full text-left bg-white border border-gray-200 rounded-lg px-4 py-3 hover:border-brand-300 hover:bg-brand-50 transition-all active:scale-[0.98]">
           <p className="font-bold text-gray-800 cjk">{d.title}</p>
           <p className="text-xs text-gray-400 mt-0.5">{d.dictationDate} · {d.words.length} 个词</p>
         </button>
@@ -172,7 +172,7 @@ function GradeFlow({ listId, childId }: { listId: string; childId: string }) {
           </div>
 
           <p className="text-xs text-gray-400 bg-amber-50 border border-amber-200 rounded-xl px-3 py-2.5">
-            📝 在纸上按顺序写出以上 {words.length} 个词语，然后拍照上传
+            📝 在纸上按顺序写出以上 {words.length} 个词语，然后拍照上传<br/>Write the {words.length} words on paper in order, then upload a photo
           </p>
         </Card>
 
@@ -182,7 +182,7 @@ function GradeFlow({ listId, childId }: { listId: string; childId: string }) {
           </p>
         )}
 
-        <label className="flex items-center justify-center gap-3 w-full rounded-2xl py-5 bg-brand-500 hover:bg-brand-600 active:scale-95 transition-all cursor-pointer shadow-lg shadow-brand-200 text-white font-bold">
+        <label className="flex items-center justify-center gap-3 w-full rounded-lg py-5 bg-brand-500 hover:bg-brand-600 active:scale-95 transition-all cursor-pointer shadow-lg shadow-brand-200 text-white font-bold">
           <input
             type="file" accept="image/*" capture="environment"
             className="sr-only"
@@ -193,10 +193,10 @@ function GradeFlow({ listId, childId }: { listId: string; childId: string }) {
             }}
           />
           <span className="text-2xl">📷</span>
-          拍照上传答案
+          拍照上传答案 Photograph answers
         </label>
 
-        <label className="flex items-center justify-center gap-3 w-full rounded-2xl py-3 bg-gray-50 hover:bg-gray-100 active:scale-95 transition-all cursor-pointer border border-gray-200 text-gray-600 font-semibold text-sm">
+        <label className="flex items-center justify-center gap-3 w-full rounded-lg py-3 bg-gray-50 hover:bg-gray-100 active:scale-95 transition-all cursor-pointer border border-gray-200 text-gray-600 font-semibold text-sm">
           <input
             type="file" accept="image/*"
             className="sr-only"
@@ -206,7 +206,7 @@ function GradeFlow({ listId, childId }: { listId: string; childId: string }) {
               e.target.value = "";
             }}
           />
-          从相册选择
+          从相册选择 Choose from album
         </label>
       </div>
     );
@@ -218,11 +218,11 @@ function GradeFlow({ listId, childId }: { listId: string; childId: string }) {
       <div className="flex flex-col items-center justify-center py-16 text-center">
         {preview && (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={preview} alt="手写答案" className="max-h-48 rounded-2xl object-contain mb-6 opacity-60" />
+          <img src={preview} alt="手写答案" className="max-h-48 rounded-lg object-contain mb-6 opacity-60" />
         )}
         <div className="w-12 h-12 border-4 border-brand-200 border-t-brand-500 rounded-full animate-spin mb-4" />
-        <p className="font-bold text-gray-700 cjk">AI 正在批改中…</p>
-        <p className="text-sm text-gray-400 mt-1">请稍候，通常需要 5–15 秒</p>
+        <p className="font-bold text-gray-700 cjk">AI 正在批改中… AI is grading…</p>
+        <p className="text-sm text-gray-400 mt-1">请稍候，通常需要 5–15 秒 · usually 5–15s</p>
       </div>
     );
   }
@@ -240,14 +240,14 @@ function GradeFlow({ listId, childId }: { listId: string; childId: string }) {
         <p className="text-2xl font-black text-gray-800 mt-3">
           {correctCount} / {words.length}
         </p>
-        <p className="text-gray-400 text-sm">个词写对了</p>
+        <p className="text-gray-400 text-sm">个词写对了 · correct</p>
         {notes && <p className="text-xs text-gray-500 mt-2 italic">{notes}</p>}
       </div>
 
       {/* Coins */}
       {coinsEarned > 0 && (
-        <div className="bg-amber-50 border border-amber-200 rounded-2xl px-4 py-3 flex items-center justify-between">
-          <span className="text-sm font-bold text-amber-700">获得金币</span>
+        <div className="bg-amber-50 border border-amber-200 rounded-lg px-4 py-3 flex items-center justify-between">
+          <span className="text-sm font-bold text-amber-700">获得金币 Earned</span>
           <span className="flex items-center gap-1 font-black text-amber-700">
             +{coinsEarned} <GoldCoin size="sm" />
           </span>
@@ -257,7 +257,7 @@ function GradeFlow({ listId, childId }: { listId: string; childId: string }) {
       {/* Photo thumbnail */}
       {preview && (
         // eslint-disable-next-line @next/next/no-img-element
-        <img src={preview} alt="手写答案" className="w-full max-h-48 rounded-2xl object-contain bg-gray-50 border border-gray-200" />
+        <img src={preview} alt="手写答案" className="w-full max-h-48 rounded-lg object-contain bg-gray-50 border border-gray-200" />
       )}
 
       {/* Word-by-word breakdown */}
@@ -266,7 +266,7 @@ function GradeFlow({ listId, childId }: { listId: string; childId: string }) {
           const word = words[r.index];
           return (
             <div key={r.index}
-              className={["rounded-2xl px-4 py-3 flex items-center gap-3", r.correct ? "bg-jade-50 border border-jade-200" : "bg-red-50 border border-red-200"].join(" ")}>
+              className={["rounded-lg px-4 py-3 flex items-center gap-3", r.correct ? "bg-jade-50 border border-jade-200" : "bg-red-50 border border-red-200"].join(" ")}>
               <Badge variant={r.correct ? "green" : "red"}>
                 {r.correct ? "✓" : "✗"}
               </Badge>
@@ -317,9 +317,9 @@ function HandwritingContent() {
 
   if (!listId) {
     return (
-      <AppShell title="AI 批改手写" backHref="/student/dashboard">
+      <AppShell title="AI 批改手写 · AI Grading" backHref="/student/dashboard">
         <div className="space-y-4 page-enter">
-          <p className="text-sm text-gray-500">选择要听写的词表：</p>
+          <p className="text-sm text-gray-500">选择要听写的词表 Choose a list：</p>
           <ListPicker childId={childId} onSelect={setListId} />
         </div>
       </AppShell>
@@ -328,7 +328,7 @@ function HandwritingContent() {
 
   return (
     <AppShell
-      title={`AI 批改 · ${child?.name ?? "学生"}`}
+      title={`AI 批改 Grade · ${child?.name ?? "学生 Student"}`}
       backHref="/student/dashboard"
     >
       <GradeFlow listId={listId} childId={childId} />

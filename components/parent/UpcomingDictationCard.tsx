@@ -35,7 +35,7 @@ export function UpcomingDictationCard({ dictation, accentBorder = "border-amber-
   const preview = dictation.words.map((w) => w.word).join("　");
 
   return (
-    <div className={`bg-white rounded-2xl shadow-sm border border-gray-100 border-l-4 ${accentBorder} px-4 py-3`}>
+    <div className={`bg-white rounded-lg shadow-sm border border-gray-100 border-l-4 ${accentBorder} px-4 py-3`}>
       <div className="flex items-center gap-2">
         <div className="flex-1 min-w-0">
           <p className="font-semibold text-gray-800 truncate text-sm cjk">{dictation.title}</p>

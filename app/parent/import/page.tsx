@@ -200,11 +200,11 @@ export default function ImportPage() {
   // ── Render ──────────────────────────────────────────────────────────────────
   if (phase === "processing") {
     return (
-      <AppShell title="批量导入" backHref="/parent/dashboard">
+      <AppShell title="批量导入 Batch Import" backHref="/parent/dashboard">
         <div className="flex flex-col items-center justify-center py-24 text-center">
           <div className="w-12 h-12 border-4 border-brand-200 border-t-brand-500 rounded-full animate-spin mb-5" />
           <p className="font-semibold text-gray-700">{progress || "AI 识别中…"}</p>
-          <p className="text-xs text-gray-400 mt-2">多页 PDF 可能需要十几秒，请稍候</p>
+          <p className="text-xs text-gray-400 mt-2">多页 PDF 可能需要十几秒，请稍候 · Multi-page PDFs may take a few seconds</p>
         </div>
       </AppShell>
     );
@@ -212,18 +212,23 @@ export default function ImportPage() {
 
   if (phase === "pick") {
     return (
-      <AppShell title="批量导入听写单" backHref="/parent/dashboard">
+      <AppShell title="批量导入 Batch Import" backHref="/parent/dashboard">
         <div className="space-y-5 page-enter">
           <Card>
-            <p className="text-sm font-semibold text-gray-700 mb-1">📄 上传 PDF 或多张照片</p>
-            <p className="text-xs text-gray-400 mb-4 leading-relaxed">
+            <p className="text-sm font-semibold text-gray-700 mb-0.5">📄 上传 PDF 或多张照片</p>
+            <p className="text-xs font-bold text-gray-400 mb-3">Upload a PDF or several photos</p>
+            <p className="text-xs text-gray-400 mb-1.5 leading-relaxed">
               支持多页 PDF（每页一个或多个听写单），也可一次选多张照片。AI 会自动识别每个听写单的课次、词语和句子，
               并忽略学校名、孩子姓名和鼓励语。识别后你可以逐个核对、分配孩子。
+            </p>
+            <p className="text-xs text-gray-400 mb-4 leading-relaxed italic">
+              The AI finds each dictation sheet (lesson, words, sentences) and ignores
+              school/student names and encouragement — then you review and assign a child to each.
             </p>
 
             <label
               className={[
-                "flex flex-col items-center justify-center gap-2 w-full rounded-2xl py-10 border-2 border-dashed cursor-pointer transition-all",
+                "flex flex-col items-center justify-center gap-2 w-full rounded-lg py-10 border-2 border-dashed cursor-pointer transition-all",
                 "border-gray-200 hover:border-brand-300 hover:bg-brand-50",
               ].join(" ")}
             >
@@ -239,8 +244,8 @@ export default function ImportPage() {
                 }}
               />
               <span className="text-4xl">📄</span>
-              <span className="text-gray-600 font-semibold text-sm">选择 PDF / 图片</span>
-              <span className="text-xs text-gray-400">可多选</span>
+              <span className="text-gray-600 font-semibold text-sm">选择 PDF / 图片 · Choose PDF / Image</span>
+              <span className="text-xs text-gray-400">可多选 · Select multiple</span>
             </label>
 
             {error && (

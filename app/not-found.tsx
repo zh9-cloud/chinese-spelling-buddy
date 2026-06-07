@@ -8,7 +8,7 @@ export default function NotFound() {
       <p className="text-gray-500 mb-8">Page not found</p>
       <Link
         href="/"
-        className="bg-brand-500 text-white font-bold px-6 py-3 rounded-2xl shadow-md hover:bg-brand-600 transition-colors"
+        className="bg-brand-500 text-white font-bold px-6 py-3 rounded-lg shadow-md hover:bg-brand-600 transition-colors"
       >
         回到主页
       </Link>

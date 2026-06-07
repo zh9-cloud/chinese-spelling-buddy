@@ -48,7 +48,7 @@ export default function SignupPage() {
           Check your inbox — click the verification link to activate your account.
         </p>
         <Link href="/auth/login"
-          className="bg-brand-500 text-white font-bold rounded-2xl px-6 py-3 text-sm hover:bg-brand-600 transition-all">
+          className="bg-brand-500 text-white font-bold rounded-lg px-6 py-3 text-sm hover:bg-brand-600 transition-all">
           前往登录 Go to Login
         </Link>
       </div>
@@ -133,7 +133,7 @@ export default function SignupPage() {
 
           <button
             type="submit" disabled={loading}
-            className="w-full bg-brand-500 hover:bg-brand-600 disabled:opacity-60 text-white font-bold rounded-2xl py-4 transition-all active:scale-95 shadow-lg shadow-brand-200"
+            className="w-full bg-brand-500 hover:bg-brand-600 disabled:opacity-60 text-white font-bold rounded-lg py-4 transition-all active:scale-95 shadow-lg shadow-brand-200"
           >
             {loading ? "注册中…" : "注册 Create Account"}
           </button>

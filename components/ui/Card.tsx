@@ -33,7 +33,7 @@ export function Card({
   return (
     <div
       className={[
-        "bg-white rounded-2xl shadow-sm border border-gray-100",
+        "bg-white rounded-lg shadow-sm border border-gray-100",
         padded ? "p-4" : "",
         accentClasses[accent],
         interactive,

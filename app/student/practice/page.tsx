@@ -42,31 +42,31 @@ function PracticeModeContent() {
 
   if (!dictation || words.length === 0) {
     return (
-      <AppShell title="练习模式" backHref="/student/dashboard">
-        <EmptyState icon="😕" title="找不到听写列表" />
+      <AppShell title="练习 Practice" backHref="/student/dashboard">
+        <EmptyState icon="😕" title="找不到听写列表 List not found" />
       </AppShell>
     );
   }
 
   if (finished) {
     return (
-      <AppShell title="练习完成！" backHref="/student/dashboard">
+      <AppShell title="练习完成！Done!" backHref="/student/dashboard">
         <div className="flex flex-col items-center justify-center py-16 text-center px-4">
           <span className="text-7xl mb-6">🌟</span>
-          <h2 className="text-2xl font-extrabold text-gray-800 mb-2">练习完成！</h2>
-          <p className="text-gray-500 mb-8">你已经完成了全部 {words.length} 个词的练习！</p>
+          <h2 className="text-2xl font-extrabold text-gray-800 mb-2">练习完成！Done!</h2>
+          <p className="text-gray-500 mb-8">你已经完成了全部 {words.length} 个词的练习！<br/><span className="text-sm">All {words.length} words practised!</span></p>
           <div className="space-y-3 w-full max-w-xs">
             <Button
               fullWidth size="lg" variant="ghost"
               onClick={() => { setIndex(0); setRevealed(false); setFinished(false); }}
             >
-              再练一次
+              再练一次 Again
             </Button>
             <Button
               fullWidth size="lg"
               onClick={() => { window.location.href = `/student/test?list=${listId}`; }}
             >
-              去测试模式 →
+              去测试 Test →
             </Button>
           </div>
         </div>
@@ -75,7 +75,7 @@ function PracticeModeContent() {
   }
 
   return (
-    <AppShell title={`练习模式 · ${dictation.title}`} backHref="/student/dashboard">
+    <AppShell title={`练习 Practice · ${dictation.title}`} backHref="/student/dashboard">
       <div className="space-y-5 page-enter">
 
         {/* ── Progress ── */}
@@ -84,7 +84,7 @@ function PracticeModeContent() {
         {/* ── Hidden word panel ── */}
         <Card className="text-center py-10">
           <p className="text-sm font-semibold text-gray-400 mb-4 uppercase tracking-wide">
-            {current.isSentence ? "听一听，想一想这句话怎么写？" : "听一听，想一想这是哪个词？"}
+            {current.isSentence ? "听一听，这句话怎么写？ Listen & write the sentence" : "听一听，这是哪个词？ Listen & write the word"}
           </p>
 
           {/* Audio button — the primary interaction */}
@@ -136,11 +136,11 @@ function PracticeModeContent() {
         <div className="space-y-3">
           {!revealed ? (
             <Button fullWidth size="lg" variant="ghost" onClick={() => setRevealed(true)}>
-              👁 揭示答案
+              👁 揭示答案 Reveal
             </Button>
           ) : (
             <Button fullWidth size="lg" onClick={goNext}>
-              {index === words.length - 1 ? "完成 ✓" : "下一个 →"}
+              {index === words.length - 1 ? "完成 Done ✓" : "下一个 Next →"}
             </Button>
           )}
         </div>

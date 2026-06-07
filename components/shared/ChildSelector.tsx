@@ -63,7 +63,7 @@ export function ChildSelector({ childList, activeChildId, onSelect, coinsByChild
             key={child.id}
             onClick={() => onSelect(child.id)}
             className={[
-              "rounded-2xl px-4 py-3 text-left transition-all duration-150",
+              "rounded-lg px-4 py-3 text-left transition-all duration-150",
               "active:scale-[0.97] focus:outline-none",
               active
                 ? `${t.activeBg} shadow-lg ring-2 ${t.ring} ring-offset-1`

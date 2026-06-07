@@ -75,7 +75,7 @@ export default function ManageChildrenPage() {
           const isEmpty = !child.name.trim();
 
           return (
-            <div key={child.id} className={`rounded-2xl border-2 ${c.border} overflow-hidden`}>
+            <div key={child.id} className={`rounded-lg border-2 ${c.border} overflow-hidden`}>
               {/* Header strip */}
               <div className={`${c.bg} px-4 py-3 flex items-center gap-2`}>
                 <span className="text-xl">{gradeEmoji[child.grade] ?? "📚"}</span>

@@ -40,7 +40,7 @@ function TestModeContent() {
   const words = dictation?.words ?? [];
 
   const initials = child?.name.split(" ").map((w) => w[0]?.toUpperCase() ?? "").join("") ?? "";
-  const pageTitle = [initials, "测试", dictation?.title].filter(Boolean).join(" · ");
+  const pageTitle = [initials, "测试 Test", dictation?.title].filter(Boolean).join(" · ");
 
   const [index, setIndex] = useState(0);
   const [statuses, setStatuses] = useState<WordStatus[]>(() => words.map(() => "pending"));
@@ -134,8 +134,8 @@ function TestModeContent() {
 
   if (!dictation || words.length === 0) {
     return (
-      <AppShell title="测试模式" backHref="/student/dashboard">
-        <EmptyState icon="😕" title="找不到听写列表" />
+      <AppShell title="测试 Test" backHref="/student/dashboard">
+        <EmptyState icon="😕" title="找不到听写列表 List not found" />
       </AppShell>
     );
   }
@@ -172,7 +172,7 @@ function TestModeContent() {
           )}
 
           {/* Coins earned */}
-          <div className="bg-amber-50 border border-amber-200 rounded-2xl px-5 py-4 mb-5 w-full max-w-xs">
+          <div className="bg-amber-50 border border-amber-200 rounded-lg px-5 py-4 mb-5 w-full max-w-xs">
             <p className="text-xs font-bold text-amber-600 uppercase tracking-wide mb-3">
               获得金币 Coins Earned
             </p>
@@ -218,7 +218,7 @@ function TestModeContent() {
             </Button>
             <button
               onClick={handleShare}
-              className="w-full flex items-center justify-center gap-2 py-3 rounded-2xl border-2 border-amber-300 bg-amber-50 text-amber-700 font-bold text-sm hover:bg-amber-100 active:scale-95 transition-all"
+              className="w-full flex items-center justify-center gap-2 py-3 rounded-lg border-2 border-amber-300 bg-amber-50 text-amber-700 font-bold text-sm hover:bg-amber-100 active:scale-95 transition-all"
             >
               <span className="text-lg">🌟</span>
               分享成就 Share Achievement
@@ -281,24 +281,24 @@ function TestModeContent() {
               {currentStatus === "pending" && (
                 <div className="flex gap-2">
                   <button onClick={markDontKnow}
-                    className="flex-1 bg-red-50 hover:bg-red-100 active:scale-95 text-red-600 font-semibold text-sm rounded-2xl py-2.5 border-2 border-red-200 transition-all">
+                    className="flex-1 bg-red-50 hover:bg-red-100 active:scale-95 text-red-600 font-semibold text-sm rounded-lg py-2.5 border-2 border-red-200 transition-all">
                     不会 <span className="text-xs opacity-70">Don&apos;t know</span>
                   </button>
                   <button onClick={markKnow}
-                    className="flex-1 bg-jade-50 hover:bg-jade-100 active:scale-95 text-jade-600 font-semibold text-sm rounded-2xl py-2.5 border-2 border-jade-200 transition-all">
+                    className="flex-1 bg-jade-50 hover:bg-jade-100 active:scale-95 text-jade-600 font-semibold text-sm rounded-lg py-2.5 border-2 border-jade-200 transition-all">
                     会了 <span className="text-xs opacity-70">Got it!</span>
                   </button>
                 </div>
               )}
               {/* After 不会: show status, user presses → to continue */}
               {currentStatus === "wrong" && (
-                <div className="py-2 rounded-2xl text-center font-bold text-sm bg-red-50 text-red-500">
-                  已显示答案 · 按 → 继续
+                <div className="py-2 rounded-lg text-center font-bold text-sm bg-red-50 text-red-500">
+                  已显示答案 Answer shown · 按 → 继续
                 </div>
               )}
               {currentStatus === "correct" && (
-                <div className="py-2 rounded-2xl text-center font-bold text-sm bg-jade-50 text-jade-600">
-                  ✓ 会了
+                <div className="py-2 rounded-lg text-center font-bold text-sm bg-jade-50 text-jade-600">
+                  ✓ 会了 Got it
                 </div>
               )}
             </div>
@@ -319,13 +319,13 @@ function TestModeContent() {
           ) : (
             <Button size="lg" fullWidth variant={allAnswered ? "primary" : "ghost"}
               disabled={!allAnswered} onClick={submitTest}>
-              {allAnswered ? "提交 ✓" : `还有 ${words.length - answeredCount} 个`}
+              {allAnswered ? "提交 Submit ✓" : `还有 ${words.length - answeredCount} 个 left`}
             </Button>
           )}
         </div>
 
         {allAnswered && index < words.length - 1 && (
-          <Button fullWidth size="lg" onClick={submitTest} className="shrink-0">提交测试 ✓</Button>
+          <Button fullWidth size="lg" onClick={submitTest} className="shrink-0">提交测试 Submit ✓</Button>
         )}
 
       </div>

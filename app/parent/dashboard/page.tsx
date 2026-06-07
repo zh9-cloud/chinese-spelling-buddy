@@ -70,7 +70,7 @@ export default function ParentDashboard() {
               <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
               </svg>
-              编辑
+              编辑 Edit Children Profiles
             </Link>
           </div>
           <ChildSelector
@@ -130,18 +130,18 @@ export default function ParentDashboard() {
 
         {/* Upcoming dictation */}
         <section>
-          <div className="flex items-center justify-between mb-3">
-            <h2 className="text-xs font-bold text-gray-400 uppercase tracking-wide">即将到来的听写 Upcoming</h2>
-            <div className="flex items-center gap-3">
-              <Link href="/parent/import"
-                className="text-sm text-brand-600 font-semibold hover:text-brand-700">
-                📷 智能导入
-              </Link>
-              <Link href="/parent/add-dictation"
-                className="text-sm text-brand-600 font-semibold hover:text-brand-700">
-                ✏️ 手动添加
-              </Link>
-            </div>
+          <h2 className="text-xs font-bold text-gray-400 uppercase tracking-wide mb-2">即将到来的 Upcoming</h2>
+          <div className="grid grid-cols-2 gap-2 mb-3">
+            <Link href="/parent/import"
+              className="flex flex-col items-center justify-center bg-brand-50 border border-brand-200 rounded-lg py-2.5 hover:bg-brand-100 active:scale-95 transition-all">
+              <span className="text-base font-bold text-brand-700">📷 智能导入</span>
+              <span className="text-xs font-bold text-brand-500 mt-0.5">Scan PDF / Photo</span>
+            </Link>
+            <Link href="/parent/add-dictation"
+              className="flex flex-col items-center justify-center bg-gray-50 border border-gray-200 rounded-lg py-2.5 hover:bg-gray-100 active:scale-95 transition-all">
+              <span className="text-base font-bold text-gray-700">✏️ 手动添加</span>
+              <span className="text-xs font-bold text-gray-400 mt-0.5">Type by hand</span>
+            </Link>
           </div>
 
           {upcoming ? (
@@ -157,7 +157,7 @@ export default function ParentDashboard() {
               description={'点击【添加】按钮来创建第一个听写列表'}
               action={
                 <Link href="/parent/add-dictation"
-                  className="inline-flex items-center gap-2 bg-brand-500 text-white font-semibold px-5 py-3 rounded-2xl shadow-md hover:bg-brand-600 active:scale-95 transition-all">
+                  className="inline-flex items-center gap-2 bg-brand-500 text-white font-semibold px-5 py-3 rounded-lg shadow-md hover:bg-brand-600 active:scale-95 transition-all">
                   ＋ 添加听写列表 Add List
                 </Link>
               }
@@ -165,11 +165,11 @@ export default function ParentDashboard() {
           )}
         </section>
 
-        {/* Other dictations — compact uniform rows, upcoming in colour, past in gray */}
-        {otherDictations.length > 0 && (
+        {/* Section: More Lists (other upcoming) */}
+        {futureDictations.length > 0 && (
           <section>
-            <h2 className="text-xs font-bold text-gray-400 uppercase tracking-wide mb-2">全部听写列表 All Lists</h2>
-            <div className="bg-white rounded-2xl border border-gray-100 divide-y divide-gray-100 overflow-hidden">
+            <h2 className="text-xs font-bold text-gray-400 uppercase tracking-wide mb-2">其他听写 More Lists</h2>
+            <div className="bg-white rounded-lg border border-gray-100 divide-y divide-gray-100 overflow-hidden">
               {futureDictations.map((d) => {
                 const preview = d.words.map((w) => w.word).join("　");
                 return (
@@ -195,6 +195,15 @@ export default function ParentDashboard() {
                   </div>
                 );
               })}
+            </div>
+          </section>
+        )}
+
+        {/* Section: Past */}
+        {pastDictations.length > 0 && (
+          <section>
+            <h2 className="text-xs font-bold text-gray-400 uppercase tracking-wide mb-2">已经完成的 Past</h2>
+            <div className="bg-white rounded-lg border border-gray-100 divide-y divide-gray-100 overflow-hidden">
               {pastDictations.map((d) => {
                 const preview = d.words.map((w) => w.word).join("　");
                 return (

@@ -19,7 +19,7 @@ export function ChildProfileCard({ child, isActive, onClick, accentBorder = "bor
   return (
     <div
       className={[
-        "bg-white rounded-2xl shadow-sm border border-gray-100 p-4",
+        "bg-white rounded-lg shadow-sm border border-gray-100 p-4",
         "border-l-4",
         isActive ? accentBorder : "border-l-gray-200",
         onClick ? "cursor-pointer hover:shadow-md active:scale-[0.98] transition-all" : "",

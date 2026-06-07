@@ -59,8 +59,6 @@ function AddDictationForm() {
   );
   const [submitting, setSubmitting] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const [ocrLoading, setOcrLoading] = useState(false);
-  const [ocrError, setOcrError] = useState("");
 
   const isEditing = !!existing;
 
@@ -152,11 +150,11 @@ function AddDictationForm() {
 
   const validate = useCallback((): boolean => {
     const e: Record<string, string> = {};
-    if (!title.trim())       e.title = "请输入听写标题";
-    if (!selectedChildId)    e.child = "请选择孩子";
-    if (!dictationDate)      e.dictationDate = "请选择听写日期";
-    if (!reminderDate)       e.reminderDate = "请选择提醒日期";
-    if (!rows.some((r) => r.word.trim())) e.words = "请至少输入一个生词";
+    if (!title.trim())       e.title = "请输入听写标题 · Enter a title";
+    if (!selectedChildId)    e.child = "请选择孩子 · Choose a child";
+    if (!dictationDate)      e.dictationDate = "请选择听写日期 · Pick the dictation date";
+    if (!reminderDate)       e.reminderDate = "请选择提醒日期 · Pick the reminder date";
+    if (!rows.some((r) => r.word.trim())) e.words = "请至少输入一个生词 · Add at least one word";
     setErrors(e);
     return Object.keys(e).length === 0;
   }, [title, selectedChildId, dictationDate, reminderDate, rows]);
@@ -201,79 +199,12 @@ function AddDictationForm() {
     router.push("/parent/dashboard");
   }
 
-  // ── OCR: photo → word list ───────────────────────────────────────────────
-  async function handleOcrPhoto(file: File) {
-    setOcrLoading(true);
-    setOcrError("");
-    try {
-      const base64 = await new Promise<string>((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => resolve((reader.result as string).split(",")[1]);
-        reader.onerror = reject;
-        reader.readAsDataURL(file);
-      });
-
-      const res = await fetch("/api/ocr", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ imageBase64: base64, mimeType: file.type }),
-      });
-
-      if (!res.ok) {
-        const err = await res.json() as { error?: string };
-        throw new Error(err.error ?? "OCR failed");
-      }
-
-      const data = await res.json() as {
-        words: { word: string; pinyin?: string; meaning?: string; isSentence?: boolean }[]
-      };
-      if (!data.words?.length) throw new Error("未识别到生词 · No words found");
-
-      // Build initial rows from OCR result
-      const rawRows = data.words.map((w) => ({
-        id: newId(),
-        word: w.word,
-        pinyin: w.pinyin ?? "",
-        meaning: w.meaning ?? "",
-        isSentence: w.isSentence ?? false,
-      }));
-
-      // Auto-lookup meanings for all items that are missing meaning
-      const enrichedRows = await Promise.all(
-        rawRows.map(async (row) => {
-          if (row.meaning) return row;   // already has meaning
-          try {
-            const r = await fetch(`/api/lookup?word=${encodeURIComponent(row.word)}`);
-            if (!r.ok) return row;
-            const d = await r.json() as { pinyin?: string; meaning?: string };
-            return {
-              ...row,
-              pinyin: row.pinyin || d.pinyin || "",
-              meaning: d.meaning || "",
-            };
-          } catch {
-            return row;
-          }
-        })
-      );
-
-      setRows((prev) => {
-        const filled = prev.filter((r) => r.word.trim());
-        return [...filled, ...enrichedRows];
-      });
-    } catch (e) {
-      setOcrError(e instanceof Error ? e.message : "识别失败，请重试");
-    } finally {
-      setOcrLoading(false);
-    }
-  }
-
   const today = new Date().toISOString().split("T")[0];
   const filledCount = rows.filter((r) => r.word.trim()).length;
 
   return (
     <AppShell
-      title={isEditing ? "编辑听写列表" : "添加听写列表"}
+      title={isEditing ? "编辑听写列表 Edit List" : "添加听写列表 Add List"}
       backHref="/parent/dashboard"
     >
       <div className="space-y-5 page-enter pb-28">
@@ -282,13 +213,13 @@ function AddDictationForm() {
         <Card>
           <label className="block">
             <span className="text-sm font-semibold text-gray-600 mb-1.5 block">
-              听写标题 <span className="text-red-400">*</span>
+              听写标题 Title <span className="text-red-400">*</span>
             </span>
             <input
               type="text"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              placeholder="例如：第五课 生词"
+              placeholder="例如：第五课 生词 · e.g. Lesson 5"
               className={[
                 "w-full border rounded-xl px-4 py-3 text-base text-gray-800 bg-gray-50",
                 "focus:outline-none focus:ring-2 focus:ring-brand-300 focus:bg-white placeholder:text-gray-300",
@@ -302,7 +233,7 @@ function AddDictationForm() {
         {/* Student */}
         <Card>
           <p className="text-sm font-semibold text-gray-600 mb-2">
-            选择学生 <span className="text-red-400">*</span>
+            选择学生 Student <span className="text-red-400">*</span>
           </p>
           <div className="space-y-2">
             {store.children.map((child) => (
@@ -334,7 +265,7 @@ function AddDictationForm() {
           <div className="space-y-4">
             <label className="block">
               <span className="text-sm font-semibold text-gray-600 mb-1.5 block">
-                听写日期 <span className="text-red-400">*</span>
+                听写日期 Dictation Date <span className="text-red-400">*</span>
               </span>
               <input
                 type="date" value={dictationDate} min={today}
@@ -349,7 +280,7 @@ function AddDictationForm() {
             </label>
             <label className="block">
               <span className="text-sm font-semibold text-gray-600 mb-1.5 block">
-                开始温习提醒日期 <span className="text-red-400">*</span>
+                开始温习提醒日期 Reminder Date <span className="text-red-400">*</span>
               </span>
               <input
                 type="date" value={reminderDate} min={today}
@@ -371,28 +302,28 @@ function AddDictationForm() {
           <div className="flex items-center justify-between mb-3">
             <div>
               <p className="text-sm font-semibold text-gray-600">
-                生词列表 <span className="text-red-400">*</span>
+                生词列表 Words <span className="text-red-400">*</span>
               </p>
-              <p className="text-xs text-gray-400 mt-0.5">已填 {filledCount} 个词</p>
+              <p className="text-xs text-gray-400 mt-0.5">已填 {filledCount} 个词 · {filledCount} filled</p>
             </div>
             <button
               type="button"
               className="text-xs text-brand-600 font-medium border border-brand-200 rounded-lg px-2 py-1"
               onClick={() => {
-                const raw = prompt("粘贴词表（每行一个词，可选：词｜拼音｜意思）");
+                const raw = prompt("粘贴词表，每行一个词 · Paste words, one per line（可选 optional：词｜拼音｜意思）");
                 if (raw) handleBulkPaste(raw);
               }}
             >
-              批量粘贴
+              批量粘贴 Paste
             </button>
           </div>
 
           {errors.words && <p className="text-red-500 text-xs mb-2">{errors.words}</p>}
 
           <div className="grid grid-cols-[2fr_2fr_3fr_auto] gap-1.5 mb-1.5 px-1">
-            <p className="text-xs font-semibold text-gray-400">汉字</p>
-            <p className="text-xs font-semibold text-gray-400">拼音（选填）</p>
-            <p className="text-xs font-semibold text-gray-400">意思（选填）</p>
+            <p className="text-xs font-semibold text-gray-400">汉字 Hanzi</p>
+            <p className="text-xs font-semibold text-gray-400">拼音 Pinyin</p>
+            <p className="text-xs font-semibold text-gray-400">意思 Meaning</p>
             <p className="w-6" />
           </div>
 
@@ -439,51 +370,8 @@ function AddDictationForm() {
             type="button" onClick={addRow}
             className="mt-3 w-full border-2 border-dashed border-gray-200 rounded-xl py-3 text-sm text-gray-400 hover:border-brand-300 hover:text-brand-500 transition-colors"
           >
-            ＋ 添加一行
+            ＋ 添加一行 Add Row
           </button>
-        </Card>
-
-        {/* Photo OCR */}
-        <Card>
-          <p className="text-sm font-semibold text-gray-600 mb-2">📷 拍照识别词表 AI OCR</p>
-          <p className="text-xs text-gray-400 mb-3">
-            拍摄课本词表照片，AI 自动识别生词并填入列表
-          </p>
-
-          <label className={[
-            "flex items-center justify-center gap-3 w-full rounded-2xl py-4 border-2 border-dashed cursor-pointer transition-all",
-            ocrLoading
-              ? "border-brand-300 bg-brand-50 cursor-wait"
-              : "border-gray-200 hover:border-brand-300 hover:bg-brand-50",
-          ].join(" ")}>
-            <input
-              type="file" accept="image/*" capture="environment"
-              className="sr-only"
-              disabled={ocrLoading}
-              onChange={(e) => {
-                const f = e.target.files?.[0];
-                if (f) handleOcrPhoto(f);
-                e.target.value = ""; // reset so the same file triggers again
-              }}
-            />
-            {ocrLoading ? (
-              <span className="flex items-center gap-2 text-brand-600 font-semibold text-sm">
-                <span className="w-4 h-4 border-2 border-brand-300 border-t-brand-500 rounded-full animate-spin" />
-                AI 识别中…
-              </span>
-            ) : (
-              <span className="flex items-center gap-2 text-gray-500 font-semibold text-sm">
-                <span className="text-2xl">📸</span>
-                拍照 / 选择图片
-              </span>
-            )}
-          </label>
-
-          {ocrError && (
-            <p className="text-xs text-red-500 mt-2 bg-red-50 border border-red-200 rounded-xl px-3 py-2">
-              {ocrError}
-            </p>
-          )}
         </Card>
       </div>
 
@@ -491,10 +379,10 @@ function AddDictationForm() {
       <div className="fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-gray-100 px-4 py-3 max-w-md mx-auto">
         <Button fullWidth size="lg" onClick={handleSubmit} disabled={submitting}>
           {submitting
-            ? "保存中…"
+            ? "保存中… Saving…"
             : isEditing
-            ? `✓ 保存修改（${filledCount} 个词）`
-            : `✓ 添加听写列表（${filledCount} 个词）`}
+            ? `✓ 保存修改 Save（${filledCount} 个词）`
+            : `✓ 添加听写列表 Add（${filledCount} 个词）`}
         </Button>
       </div>
     </AppShell>
