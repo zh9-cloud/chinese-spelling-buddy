@@ -103,14 +103,27 @@ async function syncChildrenToSupabase(children: Child[], userId: string) {
     id: c.id, name: c.name, grade: c.grade,
     chinese_type: c.chineseType, parent_id: userId,
   }));
-  const keepIds = children.map((c) => c.id);
-  // Delete removed children first (cascade handles their dictations/sessions)
-  if (keepIds.length > 0) {
-    await sb.from("children").delete().not("id", "in", keepIds);
-  } else {
-    await sb.from("children").delete().eq("parent_id", userId);
+
+  // 1. Upsert the current children FIRST, so they always persist even if the
+  //    cleanup delete below fails for any reason.
+  if (rows.length > 0) {
+    const { error } = await sb.from("children").upsert(rows, { onConflict: "id" });
+    if (error) console.error("[children] upsert error:", error.message);
   }
-  if (rows.length > 0) await sb.from("children").upsert(rows, { onConflict: "id" });
+
+  // 2. Best-effort cleanup of children removed locally. The PostgREST "not in"
+  //    filter needs a (..)-wrapped, quoted value — an array is NOT valid.
+  const keepIds = children.map((c) => c.id);
+  try {
+    if (keepIds.length > 0) {
+      const list = `(${keepIds.map((id) => `"${id}"`).join(",")})`;
+      await sb.from("children").delete().eq("parent_id", userId).not("id", "in", list);
+    } else {
+      await sb.from("children").delete().eq("parent_id", userId);
+    }
+  } catch (e) {
+    console.error("[children] cleanup delete failed:", e);
+  }
 }
 
 async function upsertDictationList(list: DictationList) {
@@ -155,6 +168,16 @@ async function upsertCoins(childId: string, amount: number) {
   const sb = getSupabase();
   if (!sb) return;
   await sb.from("coins").upsert({ child_id: childId, amount }, { onConflict: "child_id" });
+}
+
+// Push a whole local store up to Supabase (used to recover data that was added
+// while a sync was failing). Children go first — dictation_lists RLS needs the
+// child row to already exist.
+async function pushStoreToSupabase(store: AppStore, userId: string) {
+  await syncChildrenToSupabase(store.children, userId);
+  for (const list of store.dictationLists) await upsertDictationList(list);
+  for (const s of store.sessions) await upsertSession(s);
+  for (const m of store.mistakes) await upsertMistake(m);
 }
 
 // ─── Context value type ──────────────────────────────────────────────────────
@@ -220,17 +243,31 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 
     setSyncing(true);
     fetchStoreFromSupabase(user.id).then((remote) => {
-      if (remote) {
-        // New account with no data → start with empty (no mock data)
-        const merged: AppStore = {
-          children: remote.children.length > 0 ? remote.children : [],
-          dictationLists: remote.dictationLists,
-          sessions: remote.sessions,
-          mistakes: remote.mistakes,
-        };
-        setStore(merged);
-        saveStore(merged); // Write to localStorage for synchronous reads
+      if (!remote) return; // fetch failed → keep current state, never wipe
+
+      // Read RAW localStorage (not loadStore(), which would inject mock data).
+      let local: AppStore | null = null;
+      try {
+        const raw = typeof window !== "undefined" ? localStorage.getItem("cdb_store_v1") : null;
+        local = raw ? (JSON.parse(raw) as AppStore) : null;
+      } catch { local = null; }
+
+      const remoteEmpty = remote.children.length === 0 && remote.dictationLists.length === 0;
+      const localHasData =
+        !!local && ((local.children?.length ?? 0) > 0 || (local.dictationLists?.length ?? 0) > 0);
+
+      if (remoteEmpty && localHasData && local) {
+        // Cloud is empty but we still have local data that never synced.
+        // Keep the local data and push it up — do NOT overwrite it with empty.
+        setStore(local);
+        pushStoreToSupabase(local, user.id).catch((e) =>
+          console.error("[StoreContext] recovery push failed:", e));
+        return;
       }
+
+      // Otherwise the cloud is the source of truth.
+      setStore(remote);
+      saveStore(remote);
     }).catch((e) => {
       console.error("[StoreContext] Supabase sync failed:", e);
     }).finally(() => {
