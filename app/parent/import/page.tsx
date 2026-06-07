@@ -222,7 +222,7 @@ export default function ImportPage() {
               并忽略学校名、孩子姓名和鼓励语。识别后你可以逐个核对、分配孩子。
             </p>
             <p className="text-xs text-gray-400 mb-4 leading-relaxed italic">
-              The AI finds each dictation sheet (lesson, words, sentences) and ignores
+              The AI finds each spelling sheet (lesson, words, sentences) and ignores
               school/student names and encouragement — then you review and assign a child to each.
             </p>
 

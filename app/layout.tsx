@@ -13,9 +13,9 @@ const nunito = Nunito({
 });
 
 export const metadata: Metadata = {
-  title: "Chinese Dictation Buddy · 华文听写助手",
+  title: "Chinese Spelling Buddy · 华文听写助手",
   description:
-    "Practice Chinese spelling and dictation for Singapore primary school students.",
+    "Practice Chinese spelling for Singapore primary school students.",
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,

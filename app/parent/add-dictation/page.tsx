@@ -152,7 +152,7 @@ function AddDictationForm() {
     const e: Record<string, string> = {};
     if (!title.trim())       e.title = "请输入听写标题 · Enter a title";
     if (!selectedChildId)    e.child = "请选择孩子 · Choose a child";
-    if (!dictationDate)      e.dictationDate = "请选择听写日期 · Pick the dictation date";
+    if (!dictationDate)      e.dictationDate = "请选择听写日期 · Pick the spelling date";
     if (!reminderDate)       e.reminderDate = "请选择提醒日期 · Pick the reminder date";
     if (!rows.some((r) => r.word.trim())) e.words = "请至少输入一个生词 · Add at least one word";
     setErrors(e);
@@ -265,7 +265,7 @@ function AddDictationForm() {
           <div className="space-y-4">
             <label className="block">
               <span className="text-sm font-semibold text-gray-600 mb-1.5 block">
-                听写日期 Dictation Date <span className="text-red-400">*</span>
+                听写日期 Spelling Date <span className="text-red-400">*</span>
               </span>
               <input
                 type="date" value={dictationDate} min={today}
