@@ -8,7 +8,7 @@ import { useStore } from "@/context/StoreContext";
 import { useAuth } from "@/context/AuthContext";
 import type { Child, Grade, ChineseType } from "@/lib/types";
 
-const GRADES: Grade[] = ["P3", "P4", "P5", "P6"];
+const GRADES: Grade[] = ["P1", "P2", "P3", "P4", "P5", "P6", "其他"];
 
 const CHINESE_TYPES: { value: ChineseType; label: string; sublabel: string }[] = [
   { value: "Standard",   label: "华文",    sublabel: "Standard" },
@@ -23,7 +23,7 @@ const CHILD_COLORS = [
 ];
 
 const gradeEmoji: Record<string, string> = {
-  P3: "🌱", P4: "🌿", P5: "🌳", P6: "🎓",
+  P1: "🐣", P2: "🐥", P3: "🌱", P4: "🌿", P5: "🌳", P6: "🎓", 其他: "📚",
 };
 
 export default function ManageChildrenPage() {

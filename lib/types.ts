@@ -3,7 +3,7 @@
 //  All future Supabase tables will mirror these shapes exactly.
 // ─────────────────────────────────────────────
 
-export type Grade = "P3" | "P4" | "P5" | "P6";
+export type Grade = "P1" | "P2" | "P3" | "P4" | "P5" | "P6" | "其他";
 export type ChineseType = "Standard" | "Higher" | "Foundation";
 
 export interface Child {

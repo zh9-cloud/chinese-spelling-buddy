@@ -12,7 +12,7 @@ interface Props {
 }
 
 const gradeEmoji: Record<string, string> = {
-  P3: "🌱", P4: "🌿", P5: "🌳", P6: "🎓",
+  P1: "🐣", P2: "🐥", P3: "🌱", P4: "🌿", P5: "🌳", P6: "🎓", 其他: "📚",
 };
 
 export function ChildProfileCard({ child, isActive, onClick, accentBorder = "border-amber-400" }: Props) {
