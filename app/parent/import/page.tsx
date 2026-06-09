@@ -14,6 +14,16 @@ import { Button } from "@/components/ui/Button";
 import { useStore } from "@/context/StoreContext";
 import { newId } from "@/lib/storage";
 import { filesToImages } from "@/lib/pdfToImages";
+import { reminderTimes } from "@/lib/sgCalendar";
+
+function toDateStr(d: Date): string {
+  const p = (n: number) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;
+}
+function autoReminderDate(dictationDate: string): string {
+  const { weekendReview } = reminderTimes(dictationDate);
+  return weekendReview ? toDateStr(weekendReview) : dictationDate;
+}
 import type { DictationList, Word } from "@/lib/types";
 
 interface WordRow {
@@ -29,7 +39,6 @@ interface ImportedList {
   childId: string;
   title: string;
   dictationDate: string;
-  reminderDate: string;
   dayOfWeek: string; // OCR hint, display-only
   rows: WordRow[];
 }
@@ -112,7 +121,6 @@ export default function ImportPage() {
               childId: onlyChild,
               title: l.title || l.lesson || "",
               dictationDate: l.date || "",
-              reminderDate: "",
               dayOfWeek: l.dayOfWeek || "",
               rows,
             };
@@ -165,7 +173,6 @@ export default function ImportPage() {
       l.title.trim() &&
       l.childId &&
       l.dictationDate &&
-      l.reminderDate &&
       l.rows.some((r) => r.word.trim())
     );
   }
@@ -188,7 +195,7 @@ export default function ImportPage() {
         childId: l.childId,
         title: l.title.trim(),
         dictationDate: l.dictationDate,
-        reminderDate: l.reminderDate,
+        reminderDate: autoReminderDate(l.dictationDate),
         words,
         createdAt: new Date().toISOString(),
       };
@@ -327,29 +334,26 @@ export default function ImportPage() {
                 className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-base text-gray-800 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-brand-300 focus:bg-white mb-3 cjk"
               />
 
-              {/* Dates */}
-              <div className="grid grid-cols-2 gap-2 mb-3">
-                <label className="block">
-                  <span className="text-xs font-semibold text-gray-500 mb-1 block">听写日期 Spelling Date *</span>
-                  <input
-                    type="date"
-                    value={l.dictationDate}
-                    min={today}
-                    onChange={(e) => patchList(l.id, { dictationDate: e.target.value })}
-                    className="w-full border border-gray-200 rounded-xl px-2.5 py-2 text-sm text-gray-800 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-brand-300 focus:bg-white"
-                  />
-                </label>
-                <label className="block">
-                  <span className="text-xs font-semibold text-gray-500 mb-1 block">提醒日期 Reminder *</span>
-                  <input
-                    type="date"
-                    value={l.reminderDate}
-                    min={today}
-                    max={l.dictationDate || undefined}
-                    onChange={(e) => patchList(l.id, { reminderDate: e.target.value })}
-                    className="w-full border border-gray-200 rounded-xl px-2.5 py-2 text-sm text-gray-800 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-brand-300 focus:bg-white"
-                  />
-                </label>
+              {/* Spelling date (one date — reminders auto) */}
+              <div className="mb-3">
+                <span className="text-xs font-semibold text-gray-500 mb-1 block">听写日期 Spelling Date *</span>
+                <input
+                  type="date"
+                  value={l.dictationDate}
+                  min={today}
+                  onChange={(e) => patchList(l.id, { dictationDate: e.target.value })}
+                  className="w-full border border-gray-200 rounded-lg px-2.5 py-2 text-sm text-gray-800 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-brand-300 focus:bg-white"
+                />
+                {l.dictationDate && (() => {
+                  const rt = reminderTimes(l.dictationDate);
+                  return (
+                    <p className="text-[0.7rem] text-gray-400 mt-1 leading-relaxed">
+                      ⏰ 自动提醒 Auto reminders：
+                      {rt.weekendReview && <> 周末 {toDateStr(rt.weekendReview)} 9:00</>}
+                      {rt.finalReview && <> · 前一晚 {toDateStr(rt.finalReview)} 18:00</>}
+                    </p>
+                  );
+                })()}
               </div>
 
               {/* Words */}
