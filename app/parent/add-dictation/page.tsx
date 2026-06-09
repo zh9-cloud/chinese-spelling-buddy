@@ -8,6 +8,19 @@ import { Button } from "@/components/ui/Button";
 import { useStore } from "@/context/StoreContext";
 import { newId } from "@/lib/storage";
 import type { DictationList, Word } from "@/lib/types";
+import {
+  getTermStarts, setTermStarts, termWeekToDate, reminderTimes, weekdayShort,
+  type TermStarts,
+} from "@/lib/sgCalendar";
+
+function toDateStr(d: Date): string {
+  const p = (n: number) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;
+}
+function autoReminderDate(dictationDate: string): string {
+  const { weekendReview } = reminderTimes(dictationDate);
+  return weekendReview ? toDateStr(weekendReview) : dictationDate;
+}
 
 interface WordRow {
   id: string;
@@ -51,7 +64,28 @@ function AddDictationForm() {
     existing?.childId ?? store.children[0]?.id ?? ""
   );
   const [dictationDate, setDictationDate] = useState(existing?.dictationDate ?? "");
-  const [reminderDate, setReminderDate] = useState(existing?.reminderDate ?? "");
+
+  // Date input: "date" (pick a date) or "term" (Term · Week · Day → auto date)
+  const [dateMode, setDateMode] = useState<"date" | "term">("date");
+  const [term, setTerm] = useState(1);
+  const [week, setWeek] = useState(1);
+  const [weekday, setWeekday] = useState(3); // 1=Mon … default Wed
+  const [termStartsState, setTermStartsState] = useState<TermStarts>(getTermStarts());
+  const [showCalEdit, setShowCalEdit] = useState(false);
+
+  // In term mode, recompute the dictation date from Term/Week/Day.
+  useEffect(() => {
+    if (dateMode !== "term") return;
+    const d = termWeekToDate(term, week, weekday, termStartsState);
+    if (d) setDictationDate(d);
+  }, [dateMode, term, week, weekday, termStartsState]);
+
+  function updateTermStart(key: keyof TermStarts, value: string) {
+    const next = { ...termStartsState, [key]: value };
+    setTermStartsState(next);
+    setTermStarts(next);
+  }
+
   const [rows, setRows] = useState<WordRow[]>(() =>
     existing?.words.length
       ? rowsFromWords(existing.words)
@@ -153,15 +187,16 @@ function AddDictationForm() {
     if (!title.trim())       e.title = "请输入听写标题 · Enter a title";
     if (!selectedChildId)    e.child = "请选择孩子 · Choose a child";
     if (!dictationDate)      e.dictationDate = "请选择听写日期 · Pick the spelling date";
-    if (!reminderDate)       e.reminderDate = "请选择提醒日期 · Pick the reminder date";
     if (!rows.some((r) => r.word.trim())) e.words = "请至少输入一个生词 · Add at least one word";
     setErrors(e);
     return Object.keys(e).length === 0;
-  }, [title, selectedChildId, dictationDate, reminderDate, rows]);
+  }, [title, selectedChildId, dictationDate, rows]);
 
   function handleSubmit() {
     if (!validate()) return;
     setSubmitting(true);
+
+    const reminderDate = autoReminderDate(dictationDate); // auto: the Saturday before
 
     const words: Word[] = rows
       .filter((r) => r.word.trim())
@@ -260,41 +295,83 @@ function AddDictationForm() {
           {errors.child && <p className="text-red-500 text-xs mt-1">{errors.child}</p>}
         </Card>
 
-        {/* Dates */}
+        {/* Spelling date — two input modes */}
         <Card>
-          <div className="space-y-4">
-            <label className="block">
-              <span className="text-sm font-semibold text-gray-600 mb-1.5 block">
-                听写日期 Spelling Date <span className="text-red-400">*</span>
-              </span>
-              <input
-                type="date" value={dictationDate} min={today}
-                onChange={(e) => setDictationDate(e.target.value)}
-                className={[
-                  "w-full border rounded-xl px-4 py-3 text-base text-gray-800 bg-gray-50",
-                  "focus:outline-none focus:ring-2 focus:ring-brand-300 focus:bg-white",
-                  errors.dictationDate ? "border-red-400" : "border-gray-200",
-                ].join(" ")}
-              />
-              {errors.dictationDate && <p className="text-red-500 text-xs mt-1">{errors.dictationDate}</p>}
-            </label>
-            <label className="block">
-              <span className="text-sm font-semibold text-gray-600 mb-1.5 block">
-                开始温习提醒日期 Reminder Date <span className="text-red-400">*</span>
-              </span>
-              <input
-                type="date" value={reminderDate} min={today}
-                max={dictationDate || undefined}
-                onChange={(e) => setReminderDate(e.target.value)}
-                className={[
-                  "w-full border rounded-xl px-4 py-3 text-base text-gray-800 bg-gray-50",
-                  "focus:outline-none focus:ring-2 focus:ring-brand-300 focus:bg-white",
-                  errors.reminderDate ? "border-red-400" : "border-gray-200",
-                ].join(" ")}
-              />
-              {errors.reminderDate && <p className="text-red-500 text-xs mt-1">{errors.reminderDate}</p>}
-            </label>
+          <span className="text-sm font-semibold text-gray-600 mb-2 block">
+            听写日期 Spelling Date <span className="text-red-400">*</span>
+          </span>
+
+          <div className="grid grid-cols-2 gap-2 mb-3">
+            <button type="button" onClick={() => setDateMode("date")}
+              className={`rounded-lg py-2 text-sm font-semibold border transition-all ${dateMode === "date" ? "bg-brand-500 text-white border-brand-500" : "bg-gray-50 text-gray-600 border-gray-200"}`}>
+              📅 选日期 Pick date
+            </button>
+            <button type="button" onClick={() => setDateMode("term")}
+              className={`rounded-lg py-2 text-sm font-semibold border transition-all ${dateMode === "term" ? "bg-brand-500 text-white border-brand-500" : "bg-gray-50 text-gray-600 border-gray-200"}`}>
+              🗓️ 按学期 By term
+            </button>
           </div>
+
+          {dateMode === "date" ? (
+            <input
+              type="date" value={dictationDate} min={today}
+              onChange={(e) => setDictationDate(e.target.value)}
+              className={[
+                "w-full border rounded-lg px-4 py-3 text-base text-gray-800 bg-gray-50",
+                "focus:outline-none focus:ring-2 focus:ring-brand-300 focus:bg-white",
+                errors.dictationDate ? "border-red-400" : "border-gray-200",
+              ].join(" ")}
+            />
+          ) : (
+            <div className="space-y-2">
+              <div className="grid grid-cols-3 gap-2">
+                <select value={term} onChange={(e) => setTerm(+e.target.value)}
+                  className="border border-gray-200 rounded-lg px-2 py-2.5 text-sm bg-gray-50 focus:outline-none focus:ring-2 focus:ring-brand-300">
+                  {[1, 2, 3, 4].map((t) => <option key={t} value={t}>Term {t}</option>)}
+                </select>
+                <select value={week} onChange={(e) => setWeek(+e.target.value)}
+                  className="border border-gray-200 rounded-lg px-2 py-2.5 text-sm bg-gray-50 focus:outline-none focus:ring-2 focus:ring-brand-300">
+                  {Array.from({ length: 12 }, (_, i) => i + 1).map((w) => <option key={w} value={w}>第{w}周 Wk{w}</option>)}
+                </select>
+                <select value={weekday} onChange={(e) => setWeekday(+e.target.value)}
+                  className="border border-gray-200 rounded-lg px-2 py-2.5 text-sm bg-gray-50 focus:outline-none focus:ring-2 focus:ring-brand-300">
+                  {[["周一 Mon", 1], ["周二 Tue", 2], ["周三 Wed", 3], ["周四 Thu", 4], ["周五 Fri", 5], ["周六 Sat", 6], ["周日 Sun", 7]].map(([l, v]) => <option key={v as number} value={v as number}>{l}</option>)}
+                </select>
+              </div>
+              {dictationDate && (
+                <p className="text-sm text-brand-600 font-bold">→ {dictationDate} {weekdayShort(dictationDate)}</p>
+              )}
+              <button type="button" onClick={() => setShowCalEdit((v) => !v)}
+                className="text-xs text-gray-400 hover:text-brand-500">
+                {showCalEdit ? "▾" : "▸"} 校历设置 Term calendar（核对/修改开学日期）
+              </button>
+              {showCalEdit && (
+                <div className="space-y-1.5 bg-gray-50 rounded-lg p-2.5">
+                  {([["t1", "Term 1"], ["t2", "Term 2"], ["t3", "Term 3"], ["t4", "Term 4"]] as const).map(([k, label]) => (
+                    <label key={k} className="flex items-center gap-2 text-xs">
+                      <span className="w-14 text-gray-500 shrink-0">{label}</span>
+                      <input type="date" value={termStartsState[k]}
+                        onChange={(e) => updateTermStart(k, e.target.value)}
+                        className="flex-1 border border-gray-200 rounded px-2 py-1 text-xs bg-white" />
+                    </label>
+                  ))}
+                  <p className="text-[0.65rem] text-gray-400">填每学期第 1 天(开学日)· Set each term&apos;s first day</p>
+                </div>
+              )}
+            </div>
+          )}
+          {errors.dictationDate && <p className="text-red-500 text-xs mt-1">{errors.dictationDate}</p>}
+
+          {dictationDate && (() => {
+            const rt = reminderTimes(dictationDate);
+            return (
+              <div className="mt-3 text-xs text-gray-500 bg-amber-50 border border-amber-100 rounded-lg px-3 py-2 leading-relaxed">
+                ⏰ 自动提醒 Auto reminders（系统自动设定 · no need to set）：<br />
+                {rt.weekendReview && <>· 周末复习 Start revising：{toDateStr(rt.weekendReview)} 上午 9:00<br /></>}
+                {rt.finalReview && <>· 前一晚 Final review：{toDateStr(rt.finalReview)} 18:00</>}
+              </div>
+            );
+          })()}
         </Card>
 
         {/* Word list */}

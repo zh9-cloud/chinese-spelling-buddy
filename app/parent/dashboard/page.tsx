@@ -8,6 +8,8 @@ import { UpcomingDictationCard } from "@/components/parent/UpcomingDictationCard
 import { EmptyState } from "@/components/ui/EmptyState";
 import { useStore } from "@/context/StoreContext";
 import { getUpcomingDictation, weekdayLabel } from "@/lib/mockData";
+import { reminderTimes } from "@/lib/sgCalendar";
+import { buildIcs, downloadIcs, type IcsEvent } from "@/lib/ics";
 
 // Must match the THEMES array in student/dashboard/page.tsx
 const THEMES = [
@@ -24,6 +26,36 @@ export default function ParentDashboard() {
     if (confirm(`确定删除「${title}」吗？此操作不可撤销。`)) {
       deleteDictationList(id);
     }
+  }
+
+  // Export every upcoming dictation (all children) to a .ics with two alarms each:
+  // weekend review (Sat 09:00) and final review (night before 18:00).
+  function handleExportCalendar() {
+    const today = new Date().toISOString().split("T")[0];
+    const upcomingLists = store.dictationLists
+      .filter((d) => d.dictationDate >= today)
+      .sort((a, b) => a.dictationDate.localeCompare(b.dictationDate));
+    if (upcomingLists.length === 0) {
+      alert("暂无即将到来的听写可导出 · No upcoming dictation to export");
+      return;
+    }
+    const childName = (id: string) => store.children.find((c) => c.id === id)?.name ?? "";
+    const events: IcsEvent[] = upcomingLists.map((d) => {
+      const who = childName(d.childId);
+      const label = [who, d.title].filter(Boolean).join(" · ");
+      const { weekendReview, finalReview } = reminderTimes(d.dictationDate);
+      const alarms = [];
+      if (weekendReview) alarms.push({ at: weekendReview, label: `周末开始复习 Start revising · ${label}` });
+      if (finalReview) alarms.push({ at: finalReview, label: `今晚最后温习 Final review tonight · ${label}` });
+      return {
+        uid: `${d.id}@chinese-spelling-buddy`,
+        title: `📝 听写 Spelling · ${label}`,
+        date: d.dictationDate,
+        description: d.words.map((w) => w.word).join("　"),
+        alarms,
+      };
+    });
+    downloadIcs(`spelling-${today}.ics`, buildIcs(events));
   }
 
   const childIndex = store.children.findIndex((c) => c.id === activeChildId);
@@ -143,6 +175,10 @@ export default function ParentDashboard() {
               <span className="text-xs font-bold text-gray-400 mt-0.5">Type by hand</span>
             </Link>
           </div>
+          <button onClick={handleExportCalendar}
+            className="w-full flex items-center justify-center gap-2 bg-white border border-gray-200 rounded-lg py-2 mb-3 text-sm font-semibold text-gray-600 hover:bg-gray-50 active:scale-95 transition-all">
+            📅 导出整学期到日历 · Export to Calendar
+          </button>
 
           {upcoming ? (
             <UpcomingDictationCard
