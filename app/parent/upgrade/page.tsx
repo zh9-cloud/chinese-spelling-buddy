@@ -24,7 +24,7 @@ const PRO_FEATURES = [
 
 export default function UpgradePage() {
   const { user } = useAuth();
-  const { isPro, loading } = useEntitlement();
+  const { isPro, loading, plan: activePlan, currentPeriodEnd } = useEntitlement();
   const [plan, setPlan] = useState<Plan>("annual");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
@@ -79,7 +79,25 @@ export default function UpgradePage() {
         {!loading && isPro ? (
           <div className="rounded-2xl border-2 border-jade-400 bg-jade-50 p-5 text-center">
             <p className="text-lg font-black text-jade-700">✓ 你已是 Pro 会员</p>
-            <p className="text-sm text-jade-600/80 mt-1 mb-4">You&apos;re a Pro member — thank you!</p>
+            <p className="text-sm text-jade-600/80 mt-1">You&apos;re a Pro member — thank you!</p>
+            {currentPeriodEnd && (
+              <div className="mt-3 mb-4 rounded-xl bg-white/70 border border-jade-200 px-4 py-2.5 text-sm">
+                <p className="text-jade-700">
+                  <span className="font-semibold">
+                    {activePlan === "monthly" ? "月付 Monthly" : activePlan === "annual" ? "年付 Annual" : "套餐 Plan"}
+                  </span>
+                </p>
+                <p className="text-jade-600/90 mt-0.5">
+                  有效期至 · Valid until{" "}
+                  <span className="font-bold tabular-nums">
+                    {new Date(currentPeriodEnd).toLocaleDateString("en-CA", { timeZone: "Asia/Singapore" })}
+                  </span>
+                </p>
+                <p className="text-[11px] text-jade-600/60 mt-1">
+                  到期自动续费 · Renews automatically on this date
+                </p>
+              </div>
+            )}
             <button onClick={openPortal} disabled={busy}
               className="text-sm font-bold text-jade-700 border border-jade-300 rounded-xl px-5 py-2.5 hover:bg-jade-100 disabled:opacity-60">
               {busy ? "打开中…" : "管理订阅 Manage subscription"}

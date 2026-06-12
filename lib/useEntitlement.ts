@@ -14,6 +14,10 @@ export interface Entitlement {
   /** Paywall active at all? */
   billingOn: boolean;
   isPro: boolean;
+  /** "monthly" | "annual" | null — the active plan, when Pro. */
+  plan: string | null;
+  /** ISO date string the current paid period runs until, when Pro. */
+  currentPeriodEnd: string | null;
   /** Remaining free uses per feature (only meaningful for free, logged-in users). */
   remaining: Record<AiFeature, number>;
   refresh: () => void;
@@ -24,6 +28,8 @@ export function useEntitlement(): Entitlement {
   const billingOn = billingEnabledClient();
   const [loading, setLoading] = useState(true);
   const [isPro, setIsPro] = useState(false);
+  const [plan, setPlan] = useState<string | null>(null);
+  const [currentPeriodEnd, setCurrentPeriodEnd] = useState<string | null>(null);
   const [used, setUsed] = useState<Record<string, number>>({});
   const [tick, setTick] = useState(0);
   const refresh = useCallback(() => setTick((t) => t + 1), []);
@@ -41,7 +47,7 @@ export function useEntitlement(): Entitlement {
 
     (async () => {
       const [{ data: sub }, { data: usage }] = await Promise.all([
-        sb.from("subscriptions").select("status,current_period_end").eq("user_id", user.id).maybeSingle(),
+        sb.from("subscriptions").select("status,plan,current_period_end").eq("user_id", user.id).maybeSingle(),
         sb.from("ai_usage").select("feature,count").eq("user_id", user.id),
       ]);
       if (cancelled) return;
@@ -49,6 +55,8 @@ export function useEntitlement(): Entitlement {
       const active = sub && (sub.status === "active" || sub.status === "trialing") &&
         (!sub.current_period_end || new Date(sub.current_period_end).getTime() > Date.now());
       setIsPro(!!active);
+      setPlan(active ? (sub.plan ?? null) : null);
+      setCurrentPeriodEnd(active ? (sub.current_period_end ?? null) : null);
 
       const map: Record<string, number> = {};
       for (const row of usage ?? []) map[row.feature] = row.count;
@@ -64,7 +72,7 @@ export function useEntitlement(): Entitlement {
     grade: Math.max(0, FREE_AI_QUOTA.grade - (used.grade ?? 0)),
   } as Record<AiFeature, number>;
 
-  return { loading, billingOn, isPro, remaining, refresh };
+  return { loading, billingOn, isPro, plan, currentPeriodEnd, remaining, refresh };
 }
 
 /** Get the current Supabase access token (for Authorization headers), or "". */
