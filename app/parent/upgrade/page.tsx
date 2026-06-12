@@ -8,15 +8,15 @@ import { useEntitlement, getAccessToken } from "@/lib/useEntitlement";
 import { PLAN_DISPLAY, type Plan } from "@/lib/billing";
 
 const FREE_FEATURES = [
-  "1 个孩子 · 1 child",
-  "手动录入词表 · Manual word lists",
-  "学习 & 测试模式 · Learn & Test",
+  "👨‍👧 最多 2 个孩子 · Up to 2 children",
+  "✍️ 手动录入词表 · Manual word lists",
+  "🔊 Google AI 真人发音 · Natural AI audio",
+  "📖 学习 & 测试模式 · Learn & Test",
 ];
 const PRO_FEATURES = [
   "📷 拍照 / PDF 识别词表 · Photo & PDF OCR",
   "✍️ AI 批改手写 · AI handwriting grading",
   "🔔 邮件 & 日历提醒 · Email & calendar reminders",
-  "👨‍👧‍👦 多个孩子 · Multiple children",
   "📊 进度分析 · Progress analytics",
 ];
 

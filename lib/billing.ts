@@ -18,9 +18,10 @@ export const FREE_AI_QUOTA = {
 
 export type AiFeature = keyof typeof FREE_AI_QUOTA;
 
-/** Free tier allows ONE child; Pro unlocks more. */
-export const FREE_MAX_CHILDREN = 1;
-export const PRO_MAX_CHILDREN = 4;
+/** Both tiers allow up to 2 children (the Children page is capped at 2 for everyone),
+ *  so child count is NOT a paywall differentiator. */
+export const FREE_MAX_CHILDREN = 2;
+export const PRO_MAX_CHILDREN = 2;
 
 /** Pricing shown on the upgrade page (display only — real amounts live in Stripe). */
 export const PLAN_DISPLAY: Record<Plan, { label: string; price: string; per: string; note: string }> = {
