@@ -33,7 +33,7 @@ function dayBeforeDate(dictation: string): string {
   return d.toISOString().slice(0, 10);
 }
 
-interface ListRow { id: string; title: string; child_id: string; dictation_date: string; words: { word: string }[] | null }
+interface ListRow { id: string; title: string; child_id: string; dictation_date: string; words: { word: string; isSentence?: boolean }[] | null }
 interface ChildRow { id: string; name: string; parent_id: string }
 
 export async function GET(req: NextRequest) {
@@ -82,7 +82,9 @@ export async function GET(req: NextRequest) {
       else if (today === dayBeforeDate(l.dictation_date)) kind = "night";
       if (!kind) continue;
 
-      const words = (l.words ?? []).map((w) => w.word).join("、");
+      const allItems = l.words ?? [];
+      const vocab = allItems.filter((w) => !w.isSentence).map((w) => w.word);
+      const sentences = allItems.filter((w) => w.isSentence).map((w) => w.word);
       const subject =
         kind === "weekend"
           ? `📝 周末开始复习：${child.name} · ${l.title}`
@@ -91,14 +93,24 @@ export async function GET(req: NextRequest) {
         kind === "weekend"
           ? "这个周末开始复习下周的听写吧 · Start revising this weekend"
           : "明天就要听写了，今晚再温习一遍 · Dictation tomorrow — review tonight";
+      // 词语块：用「、」分隔，行高放大便于阅读
+      const vocabBlock = vocab.length
+        ? `<p style="margin:14px 0 4px"><strong>词语 Words</strong> <span style="color:#999">(${vocab.length})</span></p>
+           <p style="font-size:18px;line-height:1.8;margin:0">${vocab.join("、")}</p>`
+        : "";
+      // 句子块：每句单独一行，方便逐句听写
+      const sentenceBlock = sentences.length
+        ? `<p style="margin:14px 0 4px"><strong>句子 Sentences</strong> <span style="color:#999">(${sentences.length})</span></p>
+           <ol style="font-size:16px;line-height:1.7;margin:0;padding-left:22px">${sentences.map((s) => `<li>${s}</li>`).join("")}</ol>`
+        : "";
       const html = `
         <div style="font-family:system-ui,sans-serif;max-width:520px;margin:auto">
           <h2 style="margin:0 0 4px">${subject}</h2>
           <p style="color:#666;margin:0 0 12px">${lead}</p>
           <p style="margin:0 0 4px"><strong>孩子 Child:</strong> ${child.name}</p>
           <p style="margin:0 0 4px"><strong>听写日期 Date:</strong> ${l.dictation_date}</p>
-          <p style="margin:0 0 4px"><strong>词语 Words:</strong></p>
-          <p style="font-size:18px;line-height:1.8">${words}</p>
+          ${vocabBlock}
+          ${sentenceBlock}
           <p style="color:#999;font-size:12px;margin-top:20px">Chinese Spelling Buddy · 华文听写助手</p>
         </div>`;
 

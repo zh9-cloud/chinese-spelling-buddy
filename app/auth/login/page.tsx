@@ -98,6 +98,12 @@ export default function LoginPage() {
           >
             {loading ? "登录中…" : "登录 Sign In"}
           </button>
+
+          <div className="text-right">
+            <Link href="/auth/forgot" className="text-xs text-gray-400 hover:text-brand-500">
+              忘记密码？Forgot password?
+            </Link>
+          </div>
         </form>
 
         <OAuthButtons onError={setError} />

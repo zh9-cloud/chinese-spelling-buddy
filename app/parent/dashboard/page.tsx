@@ -7,6 +7,8 @@ import { ChildSelector } from "@/components/shared/ChildSelector";
 import { UpcomingDictationCard } from "@/components/parent/UpcomingDictationCard";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { useStore } from "@/context/StoreContext";
+import { useAuth } from "@/context/AuthContext";
+import { isSupabaseConfigured } from "@/lib/supabase";
 import { getUpcomingDictation, weekdayLabel } from "@/lib/mockData";
 import { reminderTimes } from "@/lib/sgCalendar";
 import { buildIcs, downloadIcs, type IcsEvent } from "@/lib/ics";
@@ -20,7 +22,12 @@ const THEMES = [
 
 export default function ParentDashboard() {
   const { store, getCoins, deleteDictationList } = useStore();
+  const { user, authLoading } = useAuth();
   const [activeChildId, setActiveChildId] = useState(store.children[0]?.id ?? "");
+
+  // Trial mode = account system available but parent hasn't signed in.
+  // Data lives only in this browser; nudge them to register for cloud backup.
+  const inTrialMode = isSupabaseConfigured() && !authLoading && !user;
 
   function handleDelete(id: string, title: string) {
     if (confirm(`确定删除「${title}」吗？此操作不可撤销。`)) {
@@ -51,7 +58,14 @@ export default function ParentDashboard() {
         uid: `${d.id}@chinese-spelling-buddy`,
         title: `📝 听写 Spelling · ${label}`,
         date: d.dictationDate,
-        description: d.words.map((w) => w.word).join("　"),
+        description: (() => {
+          const vocab = d.words.filter((w) => !w.isSentence).map((w) => w.word);
+          const sentences = d.words.filter((w) => w.isSentence).map((w) => w.word);
+          const parts: string[] = [];
+          if (vocab.length) parts.push(`词语 Words：\n${vocab.join("、")}`);
+          if (sentences.length) parts.push(`句子 Sentences：\n${sentences.map((s, i) => `${i + 1}. ${s}`).join("\n")}`);
+          return parts.join("\n\n");
+        })(),
         alarms,
       };
     });
@@ -90,6 +104,31 @@ export default function ParentDashboard() {
       rightSlot={<Link href="/" className="text-sm text-gray-400 hover:text-gray-600">退出 Exit</Link>}
     >
       <div className="space-y-6 page-enter">
+
+        {/* Trial-mode banner — only when not signed in */}
+        {inTrialMode && (
+          <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3">
+            <p className="text-sm font-bold text-amber-800 mb-0.5">
+              🧪 试用模式 · Trial Mode
+            </p>
+            <p className="text-xs text-amber-700 leading-relaxed mb-2.5">
+              你正在免注册试用。词表与练习记录只保存在这台设备上，清除浏览器数据或更换设备就会丢失。
+              <span className="block text-amber-600/80 mt-0.5">
+                You&apos;re using the app without an account — data is saved only on this device and isn&apos;t backed up.
+              </span>
+            </p>
+            <div className="flex gap-2">
+              <Link href="/auth/signup"
+                className="flex-1 text-center text-xs font-bold text-white bg-amber-500 hover:bg-amber-600 rounded-xl py-2 transition-colors">
+                免费注册保存 Sign up to save
+              </Link>
+              <Link href="/auth/login"
+                className="flex-1 text-center text-xs font-bold text-amber-700 border border-amber-300 hover:bg-amber-100 rounded-xl py-2 transition-colors">
+                已有账户 Log in
+              </Link>
+            </div>
+          </div>
+        )}
 
         {/* Child selector */}
         <div>
