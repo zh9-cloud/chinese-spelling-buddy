@@ -17,6 +17,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import OpenAI from "openai";
 import { prepareImageForOpenAI } from "@/lib/convertImage";
+import { checkAiQuota, recordAiUsage } from "@/lib/entitlements";
 
 // GPT-4o vision can take 15–40s; raise the serverless timeout (Vercel Hobby max = 60s).
 export const maxDuration = 60;
@@ -70,6 +71,12 @@ export async function POST(req: NextRequest) {
   const { imageBase64, mimeType, expectedWords } = body;
   if (!imageBase64 || !mimeType || !expectedWords?.length) {
     return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
+  }
+
+  // Freemium gate (no-op until billing is enabled).
+  const gate = await checkAiQuota(req, "grade");
+  if (!gate.allowed) {
+    return NextResponse.json({ error: gate.message, code: gate.code }, { status: 402 });
   }
 
   try {
@@ -127,6 +134,8 @@ export async function POST(req: NextRequest) {
 
     const correct = fullResults.filter((r) => r.correct).length;
     const score = Math.round((correct / expectedWords.length) * 100);
+
+    if (gate.shouldRecord && gate.userId) await recordAiUsage(gate.userId, "grade");
 
     return NextResponse.json({ results: fullResults, score, notes: parsed.notes ?? "" });
   } catch (e) {

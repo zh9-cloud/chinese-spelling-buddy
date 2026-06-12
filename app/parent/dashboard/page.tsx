@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { AppShell } from "@/components/layout/AppShell";
 import { ChildSelector } from "@/components/shared/ChildSelector";
@@ -8,6 +8,7 @@ import { UpcomingDictationCard } from "@/components/parent/UpcomingDictationCard
 import { EmptyState } from "@/components/ui/EmptyState";
 import { useStore } from "@/context/StoreContext";
 import { useAuth } from "@/context/AuthContext";
+import { useEntitlement } from "@/lib/useEntitlement";
 import { isSupabaseConfigured } from "@/lib/supabase";
 import { getUpcomingDictation, weekdayLabel } from "@/lib/mockData";
 import { reminderTimes } from "@/lib/sgCalendar";
@@ -23,11 +24,21 @@ const THEMES = [
 export default function ParentDashboard() {
   const { store, getCoins, deleteDictationList } = useStore();
   const { user, authLoading } = useAuth();
+  const { billingOn, isPro } = useEntitlement();
   const [activeChildId, setActiveChildId] = useState(store.children[0]?.id ?? "");
+  const [justUpgraded, setJustUpgraded] = useState(false);
 
   // Trial mode = account system available but parent hasn't signed in.
   // Data lives only in this browser; nudge them to register for cloud backup.
   const inTrialMode = isSupabaseConfigured() && !authLoading && !user;
+
+  // Show a thank-you when returning from a successful Stripe checkout.
+  useEffect(() => {
+    if (new URLSearchParams(window.location.search).get("upgraded") === "1") {
+      setJustUpgraded(true);
+      window.history.replaceState({}, "", "/parent/dashboard");
+    }
+  }, []);
 
   function handleDelete(id: string, title: string) {
     if (confirm(`确定删除「${title}」吗？此操作不可撤销。`)) {
@@ -104,6 +115,32 @@ export default function ParentDashboard() {
       rightSlot={<Link href="/" className="text-sm text-gray-400 hover:text-gray-600">退出 Exit</Link>}
     >
       <div className="space-y-6 page-enter">
+
+        {/* Checkout success */}
+        {justUpgraded && (
+          <div className="rounded-2xl border border-jade-300 bg-jade-50 px-4 py-3 text-center">
+            <p className="text-sm font-bold text-jade-700">🎉 升级成功，感谢支持！</p>
+            <p className="text-xs text-jade-600/80">Welcome to Pro — all features unlocked.</p>
+          </div>
+        )}
+
+        {/* Pro upsell / status — only when billing is live and signed in */}
+        {billingOn && user && !inTrialMode && (
+          isPro ? (
+            <div className="flex items-center justify-between rounded-2xl border border-brand-200 bg-brand-50 px-4 py-2.5">
+              <span className="text-sm font-bold text-brand-600">💎 Pro 会员</span>
+              <Link href="/parent/upgrade" className="text-xs font-semibold text-brand-500 hover:underline">
+                管理 Manage
+              </Link>
+            </div>
+          ) : (
+            <Link href="/parent/upgrade"
+              className="flex items-center justify-between rounded-2xl border border-brand-200 bg-gradient-to-r from-brand-50 to-white px-4 py-3 hover:border-brand-300 transition-colors">
+              <span className="text-sm font-bold text-gray-700">💎 升级 Pro · 解锁 AI 与提醒</span>
+              <span className="text-xs font-bold text-white bg-brand-500 rounded-full px-3 py-1">升级</span>
+            </Link>
+          )
+        )}
 
         {/* Trial-mode banner — only when not signed in */}
         {inTrialMode && (

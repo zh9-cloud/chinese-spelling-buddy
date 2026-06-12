@@ -68,12 +68,27 @@ export async function GET(req: NextRequest) {
     const { data: usersData } = await sb.auth.admin.listUsers({ perPage: 1000 });
     for (const u of usersData?.users ?? []) if (u.email) emailById.set(u.id, u.email);
 
+    // Reminders are a Pro feature: when billing is on, only email subscribers.
+    const billingOn = !!process.env.STRIPE_SECRET_KEY;
+    const proParents = new Set<string>();
+    if (billingOn) {
+      const { data: subs } = await sb
+        .from("subscriptions")
+        .select("user_id,status,current_period_end");
+      for (const s of subs ?? []) {
+        const active = s.status === "active" || s.status === "trialing";
+        const valid = !s.current_period_end || new Date(s.current_period_end).getTime() > Date.now();
+        if (active && valid) proParents.add(s.user_id);
+      }
+    }
+
     let sent = 0;
     const results: { to: string; kind: string; title: string }[] = [];
 
     for (const l of (lists ?? []) as ListRow[]) {
       const child = childMap.get(l.child_id);
       if (!child) continue;
+      if (billingOn && !proParents.has(child.parent_id)) continue; // Pro-only feature
       const to = emailById.get(child.parent_id);
       if (!to) continue;
 

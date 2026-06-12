@@ -13,7 +13,9 @@
 
 import { useState, useRef, useCallback, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
+import Link from "next/link";
 import { AppShell } from "@/components/layout/AppShell";
+import { getAccessToken } from "@/lib/useEntitlement";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
@@ -69,6 +71,7 @@ function GradeFlow({ listId, childId }: { listId: string; childId: string }) {
   const [score, setScore]         = useState(0);
   const [notes, setNotes]         = useState("");
   const [gradeError, setGradeError] = useState("");
+  const [paywall, setPaywall] = useState(false);
   const sessionSaved = useRef(false);
 
   // Handle photo selection / capture
@@ -77,6 +80,7 @@ function GradeFlow({ listId, childId }: { listId: string; childId: string }) {
     setPreview(url);
     setPhase("grading");
     setGradeError("");
+    setPaywall(false);
 
     try {
       const base64 = await new Promise<string>((resolve, reject) => {
@@ -86,9 +90,13 @@ function GradeFlow({ listId, childId }: { listId: string; childId: string }) {
         reader.readAsDataURL(file);
       });
 
+      const token = await getAccessToken();
       const res = await fetch("/api/grade", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
         body: JSON.stringify({
           imageBase64: base64,
           mimeType: file.type,
@@ -96,6 +104,11 @@ function GradeFlow({ listId, childId }: { listId: string; childId: string }) {
         }),
       });
 
+      if (res.status === 402) {
+        const err = await res.json() as { error?: string };
+        setPaywall(true);
+        throw new Error(err.error ?? "免费额度已用完");
+      }
       if (!res.ok) {
         const err = await res.json() as { error?: string };
         throw new Error(err.error ?? "批改失败");
@@ -180,6 +193,13 @@ function GradeFlow({ listId, childId }: { listId: string; childId: string }) {
           <p className="text-sm text-red-500 bg-red-50 border border-red-200 rounded-xl px-4 py-2.5">
             {gradeError}
           </p>
+        )}
+
+        {paywall && (
+          <Link href="/parent/upgrade"
+            className="block text-center text-sm font-bold text-white bg-brand-500 hover:bg-brand-600 rounded-xl py-3 shadow-lg shadow-brand-200">
+            💎 升级解锁 AI 批改 · Upgrade to unlock
+          </Link>
         )}
 
         <label className="flex items-center justify-center gap-3 w-full rounded-lg py-5 bg-brand-500 hover:bg-brand-600 active:scale-95 transition-all cursor-pointer shadow-lg shadow-brand-200 text-white font-bold">

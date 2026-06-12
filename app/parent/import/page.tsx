@@ -8,7 +8,9 @@
 
 import { useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { AppShell } from "@/components/layout/AppShell";
+import { getAccessToken } from "@/lib/useEntitlement";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { useStore } from "@/context/StoreContext";
@@ -60,6 +62,7 @@ export default function ImportPage() {
   const [phase, setPhase] = useState<Phase>("pick");
   const [progress, setProgress] = useState("");
   const [error, setError] = useState("");
+  const [paywall, setPaywall] = useState(false);
   const [lists, setLists] = useState<ImportedList[]>([]);
 
   const today = new Date().toISOString().split("T")[0];
@@ -71,17 +74,27 @@ export default function ImportPage() {
       if (!files.length) return;
       setPhase("processing");
       setError("");
+      setPaywall(false);
       try {
         setProgress("正在读取文件…");
         const images = await filesToImages(files);
         if (!images.length) throw new Error("没有可识别的页面");
 
         setProgress(`正在识别 ${images.length} 页…`);
+        const token = await getAccessToken();
         const res = await fetch("/api/import", {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          },
           body: JSON.stringify({ images }),
         });
+        if (res.status === 402) {
+          const e = (await res.json()) as { error?: string };
+          setPaywall(true);
+          throw new Error(e.error ?? "免费额度已用完");
+        }
         if (!res.ok) {
           const e = (await res.json()) as { error?: string };
           throw new Error(e.error ?? "识别失败");
@@ -259,6 +272,13 @@ export default function ImportPage() {
               <p className="text-xs text-red-500 mt-3 bg-red-50 border border-red-200 rounded-xl px-3 py-2">
                 {error}
               </p>
+            )}
+
+            {paywall && (
+              <Link href="/parent/upgrade"
+                className="block text-center text-sm font-bold text-white bg-brand-500 hover:bg-brand-600 rounded-xl py-3 mt-3 shadow-lg shadow-brand-200">
+                💎 升级解锁拍照识别 · Upgrade to unlock
+              </Link>
             )}
           </Card>
 
