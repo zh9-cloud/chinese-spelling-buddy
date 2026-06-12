@@ -5,17 +5,19 @@ import Link from "next/link";
 import { AppShell } from "@/components/layout/AppShell";
 import { useAuth } from "@/context/AuthContext";
 import { useEntitlement, getAccessToken } from "@/lib/useEntitlement";
-import { PLAN_DISPLAY, type Plan } from "@/lib/billing";
+import { PLAN_DISPLAY, FREE_AI_QUOTA, type Plan } from "@/lib/billing";
 
 const FREE_FEATURES = [
   "👨‍👧 最多 2 个孩子 · Up to 2 children",
   "✍️ 手动录入词表 · Manual word lists",
   "🔊 Google AI 真人发音 · Natural AI audio",
   "📖 学习 & 测试模式 · Learn & Test",
+  `📷 拍照 / PDF 识别词表 · ${FREE_AI_QUOTA.import} 次免费体验 (${FREE_AI_QUOTA.import} free)`,
+  `✍️ AI 批改手写 · ${FREE_AI_QUOTA.grade} 次免费体验 (${FREE_AI_QUOTA.grade} free)`,
 ];
 const PRO_FEATURES = [
-  "📷 拍照 / PDF 识别词表 · Photo & PDF OCR",
-  "✍️ AI 批改手写 · AI handwriting grading",
+  "📷 拍照 / PDF 识别词表 · 无限 (Unlimited Photo & PDF OCR)",
+  "✍️ AI 批改手写 · 无限 (Unlimited AI grading)",
   "🔔 邮件 & 日历提醒 · Email & calendar reminders",
   "📊 进度分析 · Progress analytics",
 ];
