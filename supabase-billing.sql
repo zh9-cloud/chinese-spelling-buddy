@@ -36,10 +36,13 @@ alter table subscriptions enable row level security;
 alter table ai_usage      enable row level security;
 
 -- Each parent may READ their own subscription + usage (writes go via service role).
+-- Drop-then-create so this script is safe to re-run.
+drop policy if exists "read_own_subscription" on subscriptions;
 create policy "read_own_subscription"
   on subscriptions for select
   using (user_id = auth.uid());
 
+drop policy if exists "read_own_ai_usage" on ai_usage;
 create policy "read_own_ai_usage"
   on ai_usage for select
   using (user_id = auth.uid());
