@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { AppIcon } from "@/components/ui/AppIcon";
+import { InkDivider } from "@/components/ui/InkDivider";
 import { useAuth } from "@/context/AuthContext";
 import { isSupabaseConfigured } from "@/lib/supabase";
 
@@ -25,20 +26,23 @@ export default function LandingPage() {
           <span className="text-brand-500">Buddy</span>
         </p>
 
-        {/* Chinese title */}
-        <h1 className="font-black cjk tracking-tight text-gray-700 mb-4"
-          style={{ fontSize: "clamp(1.5rem, 7.5vw, 2rem)", lineHeight: 1.2 }}>
+        {/* Chinese title — calligraphic 楷体 */}
+        <h1 className="font-black calligraphy tracking-tight text-gray-700 mb-3"
+          style={{ fontSize: "clamp(1.7rem, 8vw, 2.2rem)", lineHeight: 1.2 }}>
           华文听写助手
         </h1>
 
+        {/* Ink-wash divider */}
+        <InkDivider tone="cinnabar" className="max-w-[180px] mb-3" />
+
         {/* Tagline */}
         <div className="flex items-center gap-2 mb-10">
-          <span className="text-brand-400" style={{ fontSize: "0.75rem" }}>◆</span>
+          <span style={{ fontSize: "0.75rem", color: "var(--cinnabar)" }}>◆</span>
           <p className="font-black uppercase text-gray-400"
             style={{ fontSize: "0.68rem", letterSpacing: "0.15em" }}>
             SG Primary 3–6
           </p>
-          <span className="text-brand-400" style={{ fontSize: "0.75rem" }}>◆</span>
+          <span style={{ fontSize: "0.75rem", color: "var(--cinnabar)" }}>◆</span>
         </div>
 
         {/* Feature pills */}

@@ -8,11 +8,12 @@
 //  textbook-handwriting feel.
 // ─────────────────────────────────────────────────────────────────────────────
 
-// 楷体 stack — falls back gracefully (Apple has STKaiti; others land on serif).
+// 楷体 stack — web font 霞鹜文楷 first (loaded in layout, chunked by unicode-range),
+// then platform 楷体 (Apple has STKaiti), finally serif. Consistent kai everywhere.
 export const KAI_STACK =
-  "'Kaiti SC','STKaiti','KaiTi','TW-Kai','Noto Serif CJK SC','Songti SC',serif";
+  "'LXGW WenKai GB Screen','Kaiti SC','STKaiti','KaiTi','TW-Kai','Noto Serif CJK SC','Songti SC',serif";
 
-export function MiZiGe({ char }: { char: string }) {
+export function MiZiGe({ char }: { char?: string }) {
   return (
     <div className="relative flex-1 aspect-square max-w-[8.5rem]">
       <svg viewBox="0 0 100 100" className="w-full h-full" style={{ filter: "drop-shadow(0 4px 10px rgba(0,0,0,0.18))" }}>
@@ -27,27 +28,32 @@ export function MiZiGe({ char }: { char: string }) {
         </g>
         {/* cinnabar frame */}
         <rect x="3" y="3" width="94" height="94" rx="5" fill="none" stroke="#b83b2e" strokeWidth="2.5" />
-        {/* the character */}
-        <text
-          x="50" y="52"
-          textAnchor="middle" dominantBaseline="central"
-          fontSize="62" fill="#2a2622"
-          style={{ fontFamily: KAI_STACK }}
-        >
-          {char}
-        </text>
+        {/* the character (omitted for blank writing cells) */}
+        {char && (
+          <text
+            x="50" y="52"
+            textAnchor="middle" dominantBaseline="central"
+            fontSize="62" fill="#2a2622"
+            style={{ fontFamily: KAI_STACK }}
+          >
+            {char}
+          </text>
+        )}
       </svg>
     </div>
   );
 }
 
-/** A centred row of 米字格 cells, one per character. */
-export function MiZiGeRow({ word }: { word: string }) {
-  const chars = Array.from(word);
+/**
+ * A centred row of 米字格 cells. Pass `word` for filled cells (Learn mode),
+ * or `blanks` for empty writing cells (Test mode — frame only, no answer).
+ */
+export function MiZiGeRow({ word, blanks }: { word?: string; blanks?: number }) {
+  const cells = word != null ? Array.from(word).map((c) => c) : Array.from({ length: blanks ?? 0 }, () => undefined);
   return (
     <div className="flex items-center justify-center gap-3 w-full px-2">
-      {chars.map((c, i) => (
-        <MiZiGe key={`${c}-${i}`} char={c} />
+      {cells.map((c, i) => (
+        <MiZiGe key={i} char={c} />
       ))}
     </div>
   );

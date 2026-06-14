@@ -57,3 +57,29 @@
   80%     { transform: rotate(6deg)   scale(1); }
 }
 .wiggle { animation: wiggle 0.6s ease-in-out infinite; }
+
+/* ── Calligraphy heading (霞鹜文楷 web 楷体, system fallback) ── */
+.calligraphy {
+  font-family: "LXGW WenKai GB Screen", "Kaiti SC", "STKaiti", "KaiTi",
+    "Noto Serif CJK SC", "Songti SC", serif;
+  letter-spacing: 0.03em;
+}
+
+/* ── 朱砂 cinnabar accent ── */
+:root { --cinnabar: #b83b2e; }
+
+/* ── Seal-stamp reward animation (盖印章) ── */
+@keyframes sealStamp {
+  0%   { opacity: 0; transform: scale(2.4) rotate(-18deg); }
+  55%  { opacity: 1; transform: scale(0.86) rotate(-10deg); }
+  70%  { transform: scale(1.06) rotate(-12deg); }
+  100% { opacity: 1; transform: scale(1) rotate(-11deg); }
+}
+.seal-stamp { animation: sealStamp 0.5s cubic-bezier(0.3, 1.3, 0.6, 1) both; }
+
+/* ── Ink-wash divider sweep-in ── */
+@keyframes inkSweep {
+  from { clip-path: inset(0 100% 0 0); }
+  to   { clip-path: inset(0 0 0 0); }
+}
+.ink-sweep { animation: inkSweep 0.7s ease-out both; }

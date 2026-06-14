@@ -41,6 +41,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <head>
         <meta name="mobile-web-app-capable" content="yes" />
         <link rel="apple-touch-icon" href="/icons/icon-192.png" />
+        {/* 霞鹜文楷 (LXGW WenKai) — web 楷体 for character display + calligraphic
+            headings. Chunked by unicode-range, so only used glyphs download. */}
+        <link rel="preconnect" href="https://cdn.jsdelivr.net" crossOrigin="anonymous" />
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/cn-fontsource-lxgw-wen-kai-gb-screen/font.css" />
       </head>
       <body className="antialiased font-sans">
         <AuthProvider>

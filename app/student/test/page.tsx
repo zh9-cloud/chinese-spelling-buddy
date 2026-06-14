@@ -6,11 +6,13 @@ import { AppShell } from "@/components/layout/AppShell";
 import { Button } from "@/components/ui/Button";
 import { AudioButton } from "@/components/student/AudioButton";
 import { PinyinMeaning } from "@/components/student/PinyinMeaning";
+import { MiZiGeRow } from "@/components/student/MiZiGe";
 import { ProgressBar } from "@/components/ui/ProgressBar";
 import { Badge } from "@/components/ui/Badge";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { useStore } from "@/context/StoreContext";
 import { GoldCoin } from "@/components/ui/GoldCoin";
+import { SealStamp } from "@/components/ui/SealStamp";
 import type { WordResult } from "@/lib/types";
 
 type WordStatus = "pending" | "revealed" | "correct" | "wrong";
@@ -66,6 +68,9 @@ function TestModeContent() {
 
   const current = words[index];
   const currentStatus = statuses[index];
+  // Short words (1–4 chars) use the 米字格 — blank frame while pending, filled when revealed.
+  const charCount = current ? Array.from(current.word).length : 0;
+  const useGrid = !!current && !current.isSentence && charCount >= 1 && charCount <= 4;
   const answeredCount = statuses.filter((s) => s === "correct" || s === "wrong").length;
   const allAnswered = answeredCount === words.length;
 
@@ -144,6 +149,7 @@ function TestModeContent() {
     const correct = statuses.filter((s) => s === "correct").length;
     const score = Math.round((correct / words.length) * 100);
     const emoji = score === 100 ? "🏆" : score >= 80 ? "🌟" : score >= 60 ? "😊" : "💪";
+    const sealText = score === 100 ? "优" : score >= 80 ? "棒" : score >= 60 ? "赞" : null;
     const coinsEarned = correct;
     // NOTE: coins are awarded in the useEffect above (once), not here in render.
 
@@ -159,8 +165,15 @@ function TestModeContent() {
     return (
       <AppShell title="测试完成！Test Complete!" backHref="/student/dashboard">
         <div className="flex flex-col items-center py-8 text-center px-4 page-enter">
-          <span className="text-7xl mb-3">{emoji}</span>
-          <h2 className="text-2xl font-extrabold text-gray-800 mb-1">测试完成！</h2>
+          {sealText ? (
+            <div className="mb-3 flex items-center gap-3">
+              <span className="text-6xl">{emoji}</span>
+              <SealStamp text={sealText} size={92} />
+            </div>
+          ) : (
+            <span className="text-7xl mb-3">{emoji}</span>
+          )}
+          <h2 className="calligraphy text-2xl font-extrabold text-gray-800 mb-1">测试完成！</h2>
           <p className="text-sm text-gray-400 mb-4">Test Complete</p>
 
           <p className="text-gray-600 text-sm mb-2">
@@ -251,9 +264,14 @@ function TestModeContent() {
         {/* ── Unified word card ── */}
         <div className="flex-1 min-h-0 bg-gradient-to-br from-brand-400 to-brand-600 rounded-3xl shadow-lg overflow-hidden flex flex-col">
 
-          {/* 1. Orange area — blank underscores when pending, answer revealed after 不会 */}
+          {/* 1. Orange area — blank 米字格 / underscores when pending, answer revealed after */}
           <div className={["relative min-h-0 flex items-center justify-center px-6", current.isSentence ? "flex-[3]" : "flex-[2]"].join(" ")}>
-            {currentStatus === "pending" ? (
+            {useGrid ? (
+              // Short word: empty writing grid while pending, filled when revealed.
+              currentStatus === "pending"
+                ? <MiZiGeRow blanks={charCount} />
+                : <MiZiGeRow word={current.word} />
+            ) : currentStatus === "pending" ? (
               <span className="font-bold text-white/30 cjk select-none text-center"
                 style={{ fontSize: wordFontSize(current.word, current.isSentence), lineHeight: 1.3 }}>
                 {"＿".repeat(Math.min(current.word.length, 20))}

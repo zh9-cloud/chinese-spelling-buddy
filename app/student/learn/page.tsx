@@ -9,6 +9,7 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { AudioButton } from "@/components/student/AudioButton";
 import { PinyinMeaning } from "@/components/student/PinyinMeaning";
 import { MiZiGeRow } from "@/components/student/MiZiGe";
+import { SealStamp } from "@/components/ui/SealStamp";
 import { useStore } from "@/context/StoreContext";
 
 function wordFontSize(text: string, isSentence?: boolean): string {
@@ -66,8 +67,11 @@ function LearnModeContent() {
     return (
       <AppShell title="学习完成！All Done!" backHref="/student/dashboard">
         <div className="flex flex-col items-center justify-center py-16 text-center px-4">
-          <span className="text-7xl mb-6">🎉</span>
-          <h2 className="text-2xl font-extrabold text-gray-800 mb-2">学习完成！</h2>
+          <div className="mb-6 flex items-center gap-3">
+            <span className="text-6xl">🎉</span>
+            <SealStamp text="棒" size={92} />
+          </div>
+          <h2 className="calligraphy text-2xl font-extrabold text-gray-800 mb-2">学习完成！</h2>
           <p className="text-gray-500 mb-8">你已经学习了全部 {words.length} 个生词！<br/><span className="text-sm">All {words.length} words reviewed!</span></p>
           <div className="space-y-3 w-full max-w-xs">
             <Button fullWidth size="lg" variant="ghost"
