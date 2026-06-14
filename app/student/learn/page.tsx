@@ -8,6 +8,7 @@ import { ProgressBar } from "@/components/ui/ProgressBar";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { AudioButton } from "@/components/student/AudioButton";
 import { PinyinMeaning } from "@/components/student/PinyinMeaning";
+import { MiZiGeRow } from "@/components/student/MiZiGe";
 import { useStore } from "@/context/StoreContext";
 
 function wordFontSize(text: string, isSentence?: boolean): string {
@@ -39,6 +40,9 @@ function LearnModeContent() {
 
   const current = words[index];
   const hasDetails = !!(current?.pinyin || current?.meaning || current?.exampleSentence);
+  // Short words (1–4 characters) get the 米字格 writing-grid treatment.
+  const charCount = current ? Array.from(current.word).length : 0;
+  const useGrid = !!current && !current.isSentence && charCount >= 1 && charCount <= 4;
 
   function goNext() {
     setOpen(false);
@@ -96,15 +100,19 @@ function LearnModeContent() {
               ? "flex-[3] items-center justify-center"   // sentences get more vertical space
               : "flex-[2] items-center justify-center",
           ].join(" ")}>
-            <span
-              className={[
-                "text-white font-bold leading-snug cjk",
-                current.isSentence ? "text-center px-2" : "text-center",
-              ].join(" ")}
-              style={{ fontSize: wordFontSize(current.word, current.isSentence) }}
-            >
-              {current.word}
-            </span>
+            {useGrid ? (
+              <MiZiGeRow word={current.word} />
+            ) : (
+              <span
+                className={[
+                  "text-white font-bold leading-snug cjk",
+                  current.isSentence ? "text-center px-2" : "text-center",
+                ].join(" ")}
+                style={{ fontSize: wordFontSize(current.word, current.isSentence) }}
+              >
+                {current.word}
+              </span>
+            )}
             <div className="absolute bottom-3 right-4">
               <AudioButton text={current.word} size="lg" playTrigger={playTrigger} />
             </div>

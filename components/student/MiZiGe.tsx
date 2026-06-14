@@ -1,0 +1,54 @@
+// ─────────────────────────────────────────────────────────────────────────────
+//  米字格 (rice-grid) writing cell — gives young learners the standard
+//  character-framing used in Chinese handwriting practice.
+//
+//  Paper-toned tile + cinnabar (朱砂) border, dashed centre cross + diagonals,
+//  and the character itself drawn as SVG <text> so it scales perfectly with the
+//  cell. The character uses a 楷体 (regular-script) font stack for a calligraphic,
+//  textbook-handwriting feel.
+// ─────────────────────────────────────────────────────────────────────────────
+
+// 楷体 stack — falls back gracefully (Apple has STKaiti; others land on serif).
+export const KAI_STACK =
+  "'Kaiti SC','STKaiti','KaiTi','TW-Kai','Noto Serif CJK SC','Songti SC',serif";
+
+export function MiZiGe({ char }: { char: string }) {
+  return (
+    <div className="relative flex-1 aspect-square max-w-[8.5rem]">
+      <svg viewBox="0 0 100 100" className="w-full h-full" style={{ filter: "drop-shadow(0 4px 10px rgba(0,0,0,0.18))" }}>
+        {/* xuan-paper tile */}
+        <rect x="3" y="3" width="94" height="94" rx="5" fill="#fdfaf4" />
+        {/* dashed centre cross + diagonals (米 pattern) */}
+        <g stroke="#e0a89f" strokeWidth="1" strokeDasharray="4 3">
+          <line x1="50" y1="4" x2="50" y2="96" />
+          <line x1="4" y1="50" x2="96" y2="50" />
+          <line x1="7" y1="7" x2="93" y2="93" />
+          <line x1="93" y1="7" x2="7" y2="93" />
+        </g>
+        {/* cinnabar frame */}
+        <rect x="3" y="3" width="94" height="94" rx="5" fill="none" stroke="#b83b2e" strokeWidth="2.5" />
+        {/* the character */}
+        <text
+          x="50" y="52"
+          textAnchor="middle" dominantBaseline="central"
+          fontSize="62" fill="#2a2622"
+          style={{ fontFamily: KAI_STACK }}
+        >
+          {char}
+        </text>
+      </svg>
+    </div>
+  );
+}
+
+/** A centred row of 米字格 cells, one per character. */
+export function MiZiGeRow({ word }: { word: string }) {
+  const chars = Array.from(word);
+  return (
+    <div className="flex items-center justify-center gap-3 w-full px-2">
+      {chars.map((c, i) => (
+        <MiZiGe key={`${c}-${i}`} char={c} />
+      ))}
+    </div>
+  );
+}
