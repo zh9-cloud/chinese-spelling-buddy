@@ -109,10 +109,10 @@ function LearnModeContent() {
             ) : (
               <span
                 className={[
-                  "text-white font-bold leading-snug cjk",
+                  "leading-snug cjk",
                   current.isSentence ? "text-center px-2" : "text-center",
                 ].join(" ")}
-                style={{ fontSize: wordFontSize(current.word, current.isSentence), fontFamily: KAI_STACK }}
+                style={{ fontSize: wordFontSize(current.word, current.isSentence), fontFamily: KAI_STACK, fontWeight: 400, color: "#2a2622" }}
               >
                 {current.word}
               </span>

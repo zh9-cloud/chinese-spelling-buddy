@@ -277,8 +277,8 @@ function TestModeContent() {
                 {"＿".repeat(Math.min(current.word.length, 20))}
               </span>
             ) : (
-              <span className="text-white font-bold leading-snug cjk text-center"
-                style={{ fontSize: wordFontSize(current.word, current.isSentence), fontFamily: KAI_STACK }}>
+              <span className="leading-snug cjk text-center"
+                style={{ fontSize: wordFontSize(current.word, current.isSentence), fontFamily: KAI_STACK, fontWeight: 400, color: "#2a2622" }}>
                 {current.word}
               </span>
             )}
