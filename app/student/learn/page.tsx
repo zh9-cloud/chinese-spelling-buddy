@@ -8,7 +8,7 @@ import { ProgressBar } from "@/components/ui/ProgressBar";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { AudioButton } from "@/components/student/AudioButton";
 import { PinyinMeaning } from "@/components/student/PinyinMeaning";
-import { MiZiGeRow } from "@/components/student/MiZiGe";
+import { MiZiGeRow, KAI_STACK } from "@/components/student/MiZiGe";
 import { SealStamp } from "@/components/ui/SealStamp";
 import { useStore } from "@/context/StoreContext";
 
@@ -112,7 +112,7 @@ function LearnModeContent() {
                   "text-white font-bold leading-snug cjk",
                   current.isSentence ? "text-center px-2" : "text-center",
                 ].join(" ")}
-                style={{ fontSize: wordFontSize(current.word, current.isSentence) }}
+                style={{ fontSize: wordFontSize(current.word, current.isSentence), fontFamily: KAI_STACK }}
               >
                 {current.word}
               </span>

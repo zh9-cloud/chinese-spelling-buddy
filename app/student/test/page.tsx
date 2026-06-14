@@ -6,7 +6,7 @@ import { AppShell } from "@/components/layout/AppShell";
 import { Button } from "@/components/ui/Button";
 import { AudioButton } from "@/components/student/AudioButton";
 import { PinyinMeaning } from "@/components/student/PinyinMeaning";
-import { MiZiGeRow } from "@/components/student/MiZiGe";
+import { MiZiGeRow, KAI_STACK } from "@/components/student/MiZiGe";
 import { ProgressBar } from "@/components/ui/ProgressBar";
 import { Badge } from "@/components/ui/Badge";
 import { EmptyState } from "@/components/ui/EmptyState";
@@ -278,7 +278,7 @@ function TestModeContent() {
               </span>
             ) : (
               <span className="text-white font-bold leading-snug cjk text-center"
-                style={{ fontSize: wordFontSize(current.word, current.isSentence) }}>
+                style={{ fontSize: wordFontSize(current.word, current.isSentence), fontFamily: KAI_STACK }}>
                 {current.word}
               </span>
             )}
