@@ -277,10 +277,16 @@ function TestModeContent() {
                 {"＿".repeat(Math.min(current.word.length, 20))}
               </span>
             ) : (
-              <span className="leading-snug cjk text-center"
-                style={{ fontSize: wordFontSize(current.word, current.isSentence), fontFamily: KAI_STACK, fontWeight: 400, color: "#2a2622" }}>
+              <div className="cjk leading-snug text-center bg-[#fdfaf4] rounded-2xl px-4 py-4 max-w-[92%] max-h-full overflow-y-auto"
+                style={{
+                  fontSize: current.isSentence
+                    ? `${Math.max(1.2, 6.8 / Math.sqrt(Array.from(current.word).length)).toFixed(2)}rem`
+                    : wordFontSize(current.word, current.isSentence),
+                  fontFamily: KAI_STACK, fontWeight: 400, color: "#2a2622",
+                  boxShadow: "0 6px 18px rgba(0,0,0,0.18)",
+                }}>
                 {current.word}
-              </span>
+              </div>
             )}
             <div className="absolute bottom-3 right-4">
               <AudioButton text={current.word} size="lg" playTrigger={playTrigger} />

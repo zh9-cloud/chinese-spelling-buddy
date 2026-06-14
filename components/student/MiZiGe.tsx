@@ -15,7 +15,7 @@ export const KAI_STACK =
 
 export function MiZiGe({ char }: { char?: string }) {
   return (
-    <div className="relative flex-1 aspect-square max-w-[8.5rem]">
+    <div className="relative flex-1 aspect-square max-w-[8.5rem]" style={{ containerType: "inline-size" }}>
       <svg viewBox="0 0 100 100" className="w-full h-full" style={{ filter: "drop-shadow(0 4px 10px rgba(0,0,0,0.18))" }}>
         {/* xuan-paper tile */}
         <rect x="3" y="3" width="94" height="94" rx="5" fill="#fdfaf4" />
@@ -28,18 +28,18 @@ export function MiZiGe({ char }: { char?: string }) {
         </g>
         {/* cinnabar frame */}
         <rect x="3" y="3" width="94" height="94" rx="5" fill="none" stroke="#b83b2e" strokeWidth="2.5" />
-        {/* the character (omitted for blank writing cells) */}
-        {char && (
-          <text
-            x="50" y="52"
-            textAnchor="middle" dominantBaseline="central"
-            fontSize="62" fill="#2a2622"
-            style={{ fontFamily: KAI_STACK }}
-          >
-            {char}
-          </text>
-        )}
       </svg>
+      {/* Character as HTML text (omitted for blank writing cells) — uses the
+          same web 楷体 / weight as sentences, so strokes match (no faux bold).
+          Sized in cqw so it scales with the cell. */}
+      {char && (
+        <span
+          className="absolute inset-0 flex items-center justify-center cjk select-none"
+          style={{ fontFamily: KAI_STACK, fontWeight: 400, color: "#2a2622", fontSize: "60cqw", lineHeight: 1 }}
+        >
+          {char}
+        </span>
+      )}
     </div>
   );
 }
