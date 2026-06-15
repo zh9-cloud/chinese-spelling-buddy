@@ -1,8 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { AppShell } from "@/components/layout/AppShell";
+import { BottomTabBar } from "@/components/layout/BottomTabBar";
 import { Badge } from "@/components/ui/Badge";
 import { ModeButton, IconLearn, IconTest, IconMistakes } from "@/components/student/ModeButton";
 import { ChildSelector } from "@/components/shared/ChildSelector";
@@ -57,9 +59,11 @@ const THEMES = [
   },
 ];
 
-export default function StudentDashboard() {
+function StudentDashboardContent() {
+  const params = useSearchParams();
   const { store, getCoins } = useStore();
-  const [activeChildId, setActiveChildId] = useState(store.children[0]?.id ?? "");
+  const initialChildId = params.get("child") ?? store.children[0]?.id ?? "";
+  const [activeChildId, setActiveChildId] = useState(initialChildId);
 
   const childIndex = store.children.findIndex((c) => c.id === activeChildId);
   const theme = THEMES[Math.max(0, childIndex) % THEMES.length];
@@ -103,9 +107,9 @@ export default function StudentDashboard() {
               <GoldCoin size="sm" /> {coins}
             </span>
           )}
-          <Link href="/" className="text-sm text-gray-400 hover:text-gray-600">退出</Link>
         </div>
       }
+      bottomBar={<BottomTabBar active={activeChildId} />}
     >
       {/* Page-level tinted background */}
       <div className={`-mx-4 -mt-5 px-4 pt-5 pb-1 ${theme.page} mb-4 rounded-b-3xl`}>
@@ -263,5 +267,13 @@ export default function StudentDashboard() {
       )}
 
     </AppShell>
+  );
+}
+
+export default function StudentDashboard() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center"><div className="w-10 h-10 border-4 border-brand-200 border-t-brand-500 rounded-full animate-spin" /></div>}>
+      <StudentDashboardContent />
+    </Suspense>
   );
 }

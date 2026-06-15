@@ -13,24 +13,32 @@ interface AppShellProps {
   title: string;
   backHref?: string;
   rightSlot?: ReactNode;
+  /** Custom left-side content (e.g. a settings button) — replaces the back button. */
+  leftSlot?: ReactNode;
   children: ReactNode;
   /** Removes default page padding — useful for full-bleed hero sections */
   noPadding?: boolean;
+  /** Sticky bottom tab bar (e.g. the 家长 / children navigation). */
+  bottomBar?: ReactNode;
 }
 
 export function AppShell({
   title,
   backHref,
   rightSlot,
+  leftSlot,
   children,
   noPadding = false,
+  bottomBar,
 }: AppShellProps) {
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
       {/* ── Top nav bar ── */}
       <header className="sticky top-0 z-50 bg-white border-b border-gray-100 shadow-sm">
         <div className="max-w-md mx-auto flex items-center justify-between h-14 px-4">
-          {backHref ? (
+          {leftSlot ? (
+            <div className="flex items-center">{leftSlot}</div>
+          ) : backHref ? (
             <Link
               href={backHref}
               className="flex items-center gap-1 text-gray-500 hover:text-gray-800 transition-colors -ml-1 px-1 py-1 rounded-lg"
@@ -64,13 +72,18 @@ export function AppShell({
         className={[
           "flex-1 max-w-md mx-auto w-full",
           noPadding ? "" : "px-4 py-5",
+          bottomBar ? "pb-24" : "",
         ].join(" ")}
       >
         {children}
       </main>
 
-      {/* ── Bottom safe area for iOS home bar ── */}
-      <div className="h-safe-area-inset-bottom" />
+      {/* ── Bottom tab bar (optional) ── */}
+      {bottomBar ? (
+        <div className="sticky bottom-0 z-50">{bottomBar}</div>
+      ) : (
+        <div className="h-safe-area-inset-bottom" />
+      )}
     </div>
   );
 }
