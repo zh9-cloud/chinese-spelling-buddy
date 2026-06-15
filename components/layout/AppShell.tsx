@@ -63,7 +63,7 @@ export function AppShell({
             {title}
           </h1>
 
-          <div className="w-12 flex justify-end">{rightSlot}</div>
+          <div className="min-w-12 flex justify-end items-center">{rightSlot}</div>
         </div>
       </header>
 

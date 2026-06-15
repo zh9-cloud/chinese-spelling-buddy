@@ -5,267 +5,145 @@ import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { AppShell } from "@/components/layout/AppShell";
 import { BottomTabBar } from "@/components/layout/BottomTabBar";
-import { Badge } from "@/components/ui/Badge";
-import { ModeButton, IconLearn, IconTest, IconMistakes } from "@/components/student/ModeButton";
-import { ChildSelector } from "@/components/shared/ChildSelector";
 import { EmptyState } from "@/components/ui/EmptyState";
-import { useStore } from "@/context/StoreContext";
 import { GoldCoin } from "@/components/ui/GoldCoin";
-import { getUpcomingDictation, getDaysUntil, weekdayLabel } from "@/lib/mockData";
+import { useStore } from "@/context/StoreContext";
+import { getUpcomingDictation, weekdayLabel, getDaysUntil } from "@/lib/mockData";
+import type { Word } from "@/lib/types";
 
-// Soft, calming colour palette — one theme per child slot
-const THEMES = [
-  {
-    // warm amber — Xiao Ming
-    page:        "bg-amber-50",
-    cardBorder:  "border-l-4 border-amber-400",
-    cardBg:      "bg-white",
-    progress:    "orange" as const,
-    selectorOn:  "border-amber-400 bg-amber-50 text-amber-700",
-    selectorOff: "border-gray-200 bg-white text-gray-500",
-    badge:       "orange" as const,
-    learnBg:     "bg-sky-100",   learnIcon: "text-sky-600",
-    testBg:      "bg-amber-100", testIcon:  "text-amber-700",
-    listBorder:  "border-amber-200",
-    dot:         "bg-amber-400",
-  },
-  {
-    // soft teal — Mei Ling
-    page:        "bg-teal-50",
-    cardBorder:  "border-l-4 border-teal-400",
-    cardBg:      "bg-white",
-    progress:    "green" as const,
-    selectorOn:  "border-teal-400 bg-teal-50 text-teal-700",
-    selectorOff: "border-gray-200 bg-white text-gray-500",
-    badge:       "green" as const,
-    learnBg:     "bg-teal-100",   learnIcon: "text-teal-700",
-    testBg:      "bg-sky-100",    testIcon:  "text-sky-600",
-    listBorder:  "border-teal-200",
-    dot:         "bg-teal-400",
-  },
-  {
-    // lavender — 3rd child
-    page:        "bg-purple-50",
-    cardBorder:  "border-l-4 border-purple-400",
-    cardBg:      "bg-white",
-    progress:    "blue" as const,
-    selectorOn:  "border-purple-400 bg-purple-50 text-purple-700",
-    selectorOff: "border-gray-200 bg-white text-gray-500",
-    badge:       "purple" as const,
-    learnBg:     "bg-purple-100", learnIcon: "text-purple-600",
-    testBg:      "bg-sky-100",    testIcon:  "text-sky-600",
-    listBorder:  "border-purple-200",
-    dot:         "bg-purple-400",
-  },
+// One theme per child slot (paper hero, accent button, chips).
+const CHILD_THEME = [
+  { paper: "bg-amber-50 border-amber-200",  btn: "bg-amber-500 hover:bg-amber-600",  chip: "bg-amber-50 text-amber-700",  pill: "bg-amber-50 border-amber-200 text-amber-700" },
+  { paper: "bg-teal-50 border-teal-200",    btn: "bg-teal-600 hover:bg-teal-700",    chip: "bg-teal-50 text-teal-700",    pill: "bg-teal-50 border-teal-200 text-teal-700" },
+  { paper: "bg-purple-50 border-purple-200",btn: "bg-purple-500 hover:bg-purple-600",chip: "bg-purple-50 text-purple-700",pill: "bg-purple-50 border-purple-200 text-purple-700" },
 ];
+
+function wordPreview(words: Word[]): { head: string; more: string } {
+  const arr = words.map((w) => w.word);
+  return { head: arr.slice(0, 4).join(" · "), more: arr.length > 4 ? ` … +${arr.length - 4}` : "" };
+}
 
 function StudentDashboardContent() {
   const params = useSearchParams();
   const { store, getCoins } = useStore();
   const initialChildId = params.get("child") ?? store.children[0]?.id ?? "";
-  const [activeChildId, setActiveChildId] = useState(initialChildId);
+  const [activeChildId] = useState(initialChildId);
 
-  const childIndex = store.children.findIndex((c) => c.id === activeChildId);
-  const theme = THEMES[Math.max(0, childIndex) % THEMES.length];
+  const childIndex = Math.max(0, store.children.findIndex((c) => c.id === activeChildId));
   const child = store.children[childIndex];
+  const theme = CHILD_THEME[childIndex % CHILD_THEME.length];
   const coins = getCoins(activeChildId);
-  const coinsByChildId = Object.fromEntries(store.children.map((c) => [c.id, getCoins(c.id)]));
+
+  // Hero = the next upcoming dictation, else the most recent one.
   const upcoming = child ? getUpcomingDictation(activeChildId, store.dictationLists) : undefined;
+  const childLists = store.dictationLists
+    .filter((d) => d.childId === activeChildId)
+    .sort((a, b) => b.dictationDate.localeCompare(a.dictationDate));
+  const hero = upcoming ?? childLists[0];
 
-  const practicedWordIds = new Set(
-    store.sessions
-      .filter((s) => s.childId === activeChildId && s.dictationListId === upcoming?.id)
-      .flatMap((s) => s.wordResults.map((r) => r.wordId))
-  );
-  const totalWords = upcoming?.words.length ?? 0;
-  const practicedCount = upcoming
-    ? upcoming.words.filter((w) => practicedWordIds.has(w.id)).length
-    : 0;
-  const upcomingPct = totalWords === 0 ? 0 : Math.round((practicedCount / totalWords) * 100);
-
-  const upcomingWordIds = new Set(upcoming?.words.map((w) => w.id) ?? []);
-  const hasMistakes = store.mistakes.some(
-    (m) => m.childId === activeChildId && upcomingWordIds.has(m.wordId)
-  );
-  const days = upcoming ? getDaysUntil(upcoming.dictationDate) : null;
+  const heroWordIds = new Set(hero?.words.map((w) => w.id) ?? []);
+  const hasMistakes = store.mistakes.some((m) => m.childId === activeChildId && heroWordIds.has(m.wordId));
 
   const today = new Date().toISOString().split("T")[0];
-  // All dictations excluding the one already shown in the top card
-  const allDictations = store.dictationLists
-    .filter((d) => d.childId === activeChildId && d.id !== upcoming?.id)
-    .sort((a, b) => a.dictationDate.localeCompare(b.dictationDate));
-  const futureDictations = allDictations.filter((d) => d.dictationDate >= today);
-  const pastDictations = [...allDictations.filter((d) => d.dictationDate < today)].reverse();
+  const days = hero ? getDaysUntil(hero.dictationDate) : null;
+  const heroBadge =
+    days === null ? "" : days < 0 ? "已过" : days === 0 ? "今天" : days === 1 ? "明天听写" : `${days} 天后`;
+  const heroBadgeCls = days !== null && days >= 0 && days <= 1 ? "bg-red-50 text-red-500" : "bg-amber-50 text-amber-600";
+
+  const sentences = hero ? hero.words.filter((w) => w.isSentence).length : 0;
+  const vocab = hero ? hero.words.length - sentences : 0;
+  const { head, more } = hero ? wordPreview(hero.words) : { head: "", more: "" };
+
+  const ACTIONS = hero
+    ? [
+        { href: `/student/learn?list=${hero.id}`, icon: "📖", label: "学习", en: "Learn", disabled: false },
+        { href: `/student/test?list=${hero.id}`, icon: "✏️", label: "测验", en: "Test", disabled: false },
+        { href: `/student/mistakes?child=${activeChildId}`, icon: "📕", label: "错字本", en: "Mistakes", disabled: !hasMistakes },
+        { href: `/student/handwriting?list=${hero.id}&child=${activeChildId}`, icon: "✍️", label: "AI 批改", en: "AI grade", disabled: false },
+      ]
+    : [];
 
   return (
     <AppShell
-      title={child ? `你好，${child.name}！` : "学生页面"}
+      title={child ? `${child.name} · ${child.grade}` : "学生"}
       rightSlot={
-        <div className="flex items-center gap-2">
-          {coins > 0 && (
-            <span className="flex items-center gap-1 bg-amber-50 border border-amber-200 rounded-full pl-1.5 pr-2.5 py-0.5 text-xs font-black text-amber-700">
-              <GoldCoin size="sm" /> {coins}
-            </span>
-          )}
-        </div>
+        <span className={`flex items-center gap-1 border rounded-full pl-1.5 pr-2.5 py-0.5 text-xs font-black ${theme.pill}`}>
+          <GoldCoin size="sm" /> {coins}
+        </span>
       }
       bottomBar={<BottomTabBar active={activeChildId} />}
     >
-      {/* Page-level tinted background */}
-      <div className={`-mx-4 -mt-5 px-4 pt-5 pb-1 ${theme.page} mb-4 rounded-b-3xl`}>
+      <div className="space-y-5 page-enter">
 
-        {/* Child selector */}
-        <div className="mb-4">
-          <ChildSelector
-            childList={store.children}
-            activeChildId={activeChildId}
-            onSelect={setActiveChildId}
-            coinsByChildId={coinsByChildId}
-          />
-        </div>
-
-        {/* Section 1: Upcoming */}
-        <h2 className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">即将到来的 Upcoming</h2>
-        {upcoming ? (
-          <div className={`${theme.cardBg} ${theme.cardBorder} rounded-lg shadow-sm p-4 mb-4`}>
-            <div className="flex items-start justify-between gap-2 mb-2">
-              <div className="flex-1 min-w-0">
-                <p className="font-bold text-gray-800 text-lg leading-snug cjk">{upcoming.title}</p>
-                <p className="text-sm text-gray-500 mt-0.5">
-                  {upcoming.dictationDate} {weekdayLabel(upcoming.dictationDate)} · {upcoming.words.length} 个词
-                </p>
-              </div>
-              {days !== null && (
-                <Badge variant={days <= 2 ? "red" : days <= 5 ? "orange" : "green"}>
-                  {days === 0 ? "今天！" : days < 0 ? "已过期" : `还有 ${days} 天`}
-                </Badge>
-              )}
-            </div>
-            <p className="text-sm text-gray-800 truncate cjk tracking-wide">
-              {upcoming.words.map((w) => w.word).join("　")}
-            </p>
-            <div className="flex items-center gap-2 mt-2.5">
-              <div className="flex-1 bg-gray-100 rounded-full h-1.5 overflow-hidden">
-                <div
-                  className={`h-full rounded-full ${theme.dot} transition-all duration-500`}
-                  style={{ width: `${upcomingPct}%` }}
-                  role="progressbar"
-                  aria-valuenow={practicedCount}
-                  aria-valuemin={0}
-                  aria-valuemax={totalWords}
-                />
-              </div>
-              <span className="text-xs font-bold text-gray-500 shrink-0">{upcomingPct}%</span>
-            </div>
-          </div>
+        {!child ? (
+          <EmptyState icon="👋" title="还没有孩子" description="请家长先在「设置 → 孩子管理」添加孩子。" />
+        ) : !hero ? (
+          <EmptyState icon="📅" title="暂无听写" description="等待家长添加听写列表后再来练习吧！" />
         ) : (
-          <EmptyState icon="🎉" title="暂无听写任务" description="等待家长添加听写列表后再来练习吧！" />
-        )}
+          <>
+            {/* Hero card */}
+            <div className={`rounded-2xl border p-4 ${theme.paper}`}>
+              <div className="flex items-center gap-2 mb-2">
+                <span className={`text-[11px] font-semibold rounded-full px-2.5 py-0.5 ${heroBadgeCls}`}>{heroBadge}</span>
+                <span className="ml-auto text-xs text-gray-500">{hero.dictationDate} {weekdayLabel(hero.dictationDate)}</span>
+              </div>
+              <p className="text-xl font-bold text-gray-800 cjk mb-1">{hero.title}</p>
+              <p className="text-[13px] text-gray-500">{vocab} 个词{sentences > 0 ? ` · ${sentences} 个句子` : ""}</p>
+              <p className="text-[14px] text-gray-600 mt-2 cjk truncate">{head}<span className="text-gray-300">{more}</span></p>
+              <Link href={`/student/learn?list=${hero.id}`}
+                className={`mt-3.5 block text-center text-white font-bold rounded-xl py-3 text-[15px] active:scale-95 transition-all ${theme.btn}`}>
+                开始学习 →
+              </Link>
+            </div>
 
-        {/* Practice modes — Learn & Test side by side, Mistakes below */}
-        {upcoming && (
-          <div className="space-y-2 pb-4">
-            <div className="grid grid-cols-2 gap-2">
-              <ModeButton
-                href={`/student/learn?list=${upcoming.id}`}
-                icon={<IconLearn />} label="学习 Learn"
-                accentColor={theme.learnBg} iconColor={theme.learnIcon}
-                size="lg"
-              />
-              <ModeButton
-                href={`/student/test?list=${upcoming.id}`}
-                icon={<IconTest />} label="测试 Test"
-                accentColor={theme.testBg} iconColor={theme.testIcon}
-                size="lg"
-              />
-            </div>
-            <div className="mt-3 grid grid-cols-2 gap-2">
-              <ModeButton
-                href={`/student/mistakes?child=${activeChildId}`}
-                icon={<IconMistakes />} label="错字本 Mistakes"
-                accentColor="bg-purple-100" iconColor="text-purple-600"
-                size="sm"
-                disabled={!hasMistakes}
-              />
-              <ModeButton
-                href={`/student/handwriting?list=${upcoming.id}&child=${activeChildId}`}
-                icon={<span className="text-xl">✍️</span>} label="AI批改"
-                accentColor="bg-rose-100" iconColor="text-rose-600"
-                size="sm"
-              />
-            </div>
-          </div>
+            {/* Practice grid */}
+            <section>
+              <h2 className="text-xs font-bold text-gray-400 uppercase tracking-wide mb-2">练习 Practice</h2>
+              <div className="grid grid-cols-2 gap-3">
+                {ACTIONS.map((a) => (
+                  a.disabled ? (
+                    <div key={a.label} className="flex flex-col items-start gap-2 bg-white border border-gray-100 rounded-2xl px-4 py-4 opacity-40">
+                      <span className="text-2xl">{a.icon}</span>
+                      <span className="text-[15px] font-bold text-gray-500">{a.label} <span className="text-xs font-normal text-gray-400">{a.en}</span></span>
+                    </div>
+                  ) : (
+                    <Link key={a.label} href={a.href}
+                      className="flex flex-col items-start gap-2 bg-white border border-gray-200 rounded-2xl px-4 py-4 hover:border-gray-300 active:scale-95 transition-all">
+                      <span className="text-2xl">{a.icon}</span>
+                      <span className="text-[15px] font-bold text-gray-700">{a.label} <span className="text-xs font-normal text-gray-400">{a.en}</span></span>
+                    </Link>
+                  )
+                ))}
+              </div>
+            </section>
+
+            {/* Browse by category */}
+            <section>
+              <h2 className="text-xs font-bold text-gray-400 uppercase tracking-wide mb-2">按分类浏览 Browse</h2>
+              <div className="space-y-2.5">
+                <Link href={`/student/lists?child=${activeChildId}`}
+                  className={`flex items-center gap-2.5 rounded-2xl px-4 py-3.5 font-bold text-[15px] active:scale-[0.99] transition-all ${theme.chip}`}>
+                  <span className="text-lg">🏫</span>老师布置的听写
+                  <span className="ml-auto opacity-60">›</span>
+                </Link>
+                <div className="flex items-center gap-2.5 rounded-2xl px-4 py-3.5 font-bold text-[15px] bg-indigo-50 text-indigo-600">
+                  <span className="text-lg">📚</span>课本生词表 P1–P6
+                  <span className="ml-auto text-[11px] font-bold bg-white text-indigo-500 rounded-full px-2 py-0.5">即将开放</span>
+                </div>
+                <div className="grid grid-cols-2 gap-2.5">
+                  <div className="flex items-center gap-2 rounded-2xl px-4 py-3.5 font-bold text-[15px] bg-gray-100 text-gray-400">
+                    <span className="text-lg">🎤</span>口语<span className="ml-auto text-sm">🔒</span>
+                  </div>
+                  <div className="flex items-center gap-2 rounded-2xl px-4 py-3.5 font-bold text-[15px] bg-gray-100 text-gray-400">
+                    <span className="text-lg">✍️</span>写作<span className="ml-auto text-sm">🔒</span>
+                  </div>
+                </div>
+                <p className="text-center text-[11px] text-gray-300">口语、写作 — 敬请期待 coming soon</p>
+              </div>
+            </section>
+          </>
         )}
       </div>
-
-      {/* Section 2: More Lists (other upcoming) */}
-      {futureDictations.length > 0 && (
-        <section className="mb-6">
-          <h2 className="text-xs font-bold text-gray-400 uppercase tracking-wide mb-2">其他听写 More Lists</h2>
-          <div className="bg-white rounded-lg border border-gray-100 divide-y divide-gray-100 overflow-hidden">
-            {futureDictations.map((d) => {
-              const preview = d.words.map((w) => w.word).join("　");
-              return (
-                <div key={d.id} className="flex items-center gap-3 px-4 py-3">
-                  <div className={`w-2 h-2 rounded-full shrink-0 ${theme.dot}`} />
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold text-gray-700 truncate cjk">{d.title}</p>
-                    <p className="text-xs text-gray-400 mt-0.5">{d.dictationDate} {weekdayLabel(d.dictationDate)} · {d.words.length} 个词</p>
-                    {preview && (
-                      <p className="text-xs text-gray-800 mt-1 truncate cjk tracking-wide">{preview}</p>
-                    )}
-                  </div>
-                  <div className="flex items-center gap-3 shrink-0">
-                    <Link href={`/student/learn?list=${d.id}`}
-                      className={`text-sm font-bold ${theme.learnIcon} hover:opacity-70 active:scale-95 transition-all`}>
-                      Learn
-                    </Link>
-                    <Link href={`/student/test?list=${d.id}`}
-                      className={`text-sm font-bold ${theme.testIcon} hover:opacity-70 active:scale-95 transition-all`}>
-                      Test
-                    </Link>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </section>
-      )}
-
-      {/* Section 3: Completed / past */}
-      {pastDictations.length > 0 && (
-        <section>
-          <h2 className="text-xs font-bold text-gray-400 uppercase tracking-wide mb-2">已经完成的 Past</h2>
-          <div className="bg-white rounded-lg border border-gray-100 divide-y divide-gray-100 overflow-hidden">
-            {pastDictations.map((d) => {
-              const preview = d.words.map((w) => w.word).join("　");
-              return (
-                <div key={d.id} className="flex items-center gap-3 px-4 py-3 opacity-60">
-                  <div className="w-2 h-2 rounded-full shrink-0 bg-gray-300" />
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-gray-500 truncate cjk">{d.title}</p>
-                    <p className="text-xs text-gray-400 mt-0.5">{d.dictationDate} {weekdayLabel(d.dictationDate)} · {d.words.length} 个词</p>
-                    {preview && (
-                      <p className="text-xs text-gray-400 mt-1 truncate cjk tracking-wide">{preview}</p>
-                    )}
-                  </div>
-                  <div className="flex items-center gap-3 shrink-0">
-                    <Link href={`/student/learn?list=${d.id}`}
-                      className="text-sm font-bold text-gray-400 hover:opacity-70 active:scale-95 transition-all">
-                      Learn
-                    </Link>
-                    <Link href={`/student/test?list=${d.id}`}
-                      className="text-sm font-bold text-gray-400 hover:opacity-70 active:scale-95 transition-all">
-                      Test
-                    </Link>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </section>
-      )}
-
     </AppShell>
   );
 }
