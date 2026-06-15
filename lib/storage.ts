@@ -87,6 +87,29 @@ export function saveSession(session: PracticeSession): void {
 
 // ── Mistake book ────────────────────────────
 
+/** Keep at most this many mistake entries per child (the most recently practiced). */
+export const MISTAKE_LIMIT_PER_CHILD = 15;
+
+/**
+ * Trim a child's mistakes down to the most-recent MISTAKE_LIMIT_PER_CHILD
+ * (by lastPracticed). Returns the kept list plus the entries that were removed
+ * (so callers can also delete them from the cloud).
+ */
+export function pruneChildMistakes(
+  mistakes: MistakeEntry[],
+  childId: string,
+  limit = MISTAKE_LIMIT_PER_CHILD
+): { kept: MistakeEntry[]; removed: MistakeEntry[] } {
+  const ofChild = mistakes
+    .filter((m) => m.childId === childId)
+    .sort((a, b) => b.lastPracticed.localeCompare(a.lastPracticed));
+  if (ofChild.length <= limit) return { kept: mistakes, removed: [] };
+  const removed = ofChild.slice(limit);
+  const removedIds = new Set(removed.map((m) => m.wordId));
+  const kept = mistakes.filter((m) => !(m.childId === childId && removedIds.has(m.wordId)));
+  return { kept, removed };
+}
+
 export function addMistake(entry: MistakeEntry): void {
   const store = loadStore();
   const existing = store.mistakes.find(
@@ -98,6 +121,7 @@ export function addMistake(entry: MistakeEntry): void {
   } else {
     store.mistakes.push(entry);
   }
+  store.mistakes = pruneChildMistakes(store.mistakes, entry.childId).kept;
   saveStore(store);
 }
 

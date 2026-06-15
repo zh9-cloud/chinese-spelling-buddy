@@ -30,6 +30,7 @@ import {
   loadStore,
   saveStore,
   newId,
+  pruneChildMistakes,
 } from "@/lib/storage";
 import { getSupabase } from "@/lib/supabase";
 import { useAuth } from "./AuthContext";
@@ -162,6 +163,12 @@ async function upsertMistake(entry: MistakeEntry) {
     word: entry.word, pinyin: entry.pinyin ?? null, meaning: entry.meaning ?? null,
     wrong_count: entry.wrongCount, last_practiced: entry.lastPracticed,
   }, { onConflict: "word_id,child_id" });
+}
+
+async function deleteMistakeRow(wordId: string, childId: string) {
+  const sb = getSupabase();
+  if (!sb) return;
+  await sb.from("mistakes").delete().eq("word_id", wordId).eq("child_id", childId);
 }
 
 async function upsertCoins(childId: string, amount: number) {
@@ -338,10 +345,15 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       } else {
         mistakes.push(entry);
       }
-      const next = { ...prev, mistakes };
-      saveStore(next);
       const finalEntry = idx >= 0 ? mistakes[idx] : entry;
-      if (userRef.current) upsertMistake(finalEntry).catch(console.error);
+      // Cap each child's mistakes at the most-recent N; prune the rest.
+      const { kept, removed } = pruneChildMistakes(mistakes, entry.childId);
+      const next = { ...prev, mistakes: kept };
+      saveStore(next);
+      if (userRef.current) {
+        upsertMistake(finalEntry).catch(console.error);
+        for (const r of removed) deleteMistakeRow(r.wordId, r.childId).catch(console.error);
+      }
       return next;
     });
   }, []);
