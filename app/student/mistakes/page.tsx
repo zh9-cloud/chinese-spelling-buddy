@@ -68,33 +68,62 @@ function MistakesContent() {
             </p>
 
             <div className="space-y-3">
-              {mistakes.map((entry) => (
-                <Card key={entry.wordId} accent={entry.wrongCount >= 3 ? "red" : "orange"}>
-                  <div className="flex items-center gap-4">
-                    <div className="shrink-0 w-16 h-16 bg-brand-50 rounded-lg flex items-center justify-center">
-                      <span className="text-3xl font-bold text-brand-600 cjk">
-                        {entry.word}
-                      </span>
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      {entry.pinyin && (
-                        <p className="text-base font-medium text-gray-600">{entry.pinyin}</p>
-                      )}
-                      {entry.meaning && (
-                        <p className="text-sm text-gray-400 truncate">{entry.meaning}</p>
-                      )}
-                      <div className="flex items-center gap-2 mt-1.5">
-                        <Badge variant={entry.wrongCount >= 3 ? "red" : "orange"}>
-                          错了 {entry.wrongCount} 次
-                        </Badge>
+              {mistakes.map((entry) => {
+                // Sentences / long items can't fit the small left box — give them
+                // a full-width stacked layout instead.
+                const isLong = Array.from(entry.word).length > 4;
+                return (
+                  <Card key={entry.wordId} accent={entry.wrongCount >= 3 ? "red" : "orange"}>
+                    {isLong ? (
+                      <div>
+                        <div className="flex items-start justify-between gap-3 mb-1.5">
+                          <p className="flex-1 min-w-0 text-lg font-bold text-brand-600 cjk leading-snug break-words">
+                            {entry.word}
+                          </p>
+                          <div className="shrink-0">
+                            <AudioButton text={entry.word} size="sm" />
+                          </div>
+                        </div>
+                        {entry.pinyin && (
+                          <p className="text-sm font-medium text-gray-500 break-words">{entry.pinyin}</p>
+                        )}
+                        {entry.meaning && (
+                          <p className="text-xs text-gray-400 break-words">{entry.meaning}</p>
+                        )}
+                        <div className="mt-2">
+                          <Badge variant={entry.wrongCount >= 3 ? "red" : "orange"}>
+                            错了 {entry.wrongCount} 次
+                          </Badge>
+                        </div>
                       </div>
-                    </div>
-                    <div className="shrink-0">
-                      <AudioButton text={entry.word} size="sm" />
-                    </div>
-                  </div>
-                </Card>
-              ))}
+                    ) : (
+                      <div className="flex items-center gap-4">
+                        <div className="shrink-0 w-16 h-16 bg-brand-50 rounded-lg flex items-center justify-center">
+                          <span className="text-3xl font-bold text-brand-600 cjk">
+                            {entry.word}
+                          </span>
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          {entry.pinyin && (
+                            <p className="text-base font-medium text-gray-600">{entry.pinyin}</p>
+                          )}
+                          {entry.meaning && (
+                            <p className="text-sm text-gray-400 truncate">{entry.meaning}</p>
+                          )}
+                          <div className="flex items-center gap-2 mt-1.5">
+                            <Badge variant={entry.wrongCount >= 3 ? "red" : "orange"}>
+                              错了 {entry.wrongCount} 次
+                            </Badge>
+                          </div>
+                        </div>
+                        <div className="shrink-0">
+                          <AudioButton text={entry.word} size="sm" />
+                        </div>
+                      </div>
+                    )}
+                  </Card>
+                );
+              })}
             </div>
 
             <p className="text-center text-xs text-gray-400 pt-2 pb-4">
