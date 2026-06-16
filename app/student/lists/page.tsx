@@ -63,8 +63,8 @@ function AssignedListsContent() {
               const isPast = d.dictationDate < today;
               return (
                 <div key={d.id} className={`flex items-center gap-3 px-4 py-3 ${isPast && !score ? "opacity-70" : ""}`}>
-                  <div className="text-center w-11 shrink-0">
-                    <p className="text-sm font-black text-gray-700">{Number(d.dictationDate.slice(8, 10))}</p>
+                  <div className="text-center w-12 shrink-0">
+                    <p className="text-sm font-black text-gray-700">{Number(d.dictationDate.slice(5, 7))}/{Number(d.dictationDate.slice(8, 10))}</p>
                     <p className="text-[11px] text-gray-400">{weekdayLabel(d.dictationDate)}</p>
                   </div>
                   <div className="flex-1 min-w-0">

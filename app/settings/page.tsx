@@ -14,7 +14,7 @@ function Row({ href, onClick, icon, label, sub, value, danger, last }: {
 }) {
   const inner = (
     <div className={`flex items-center gap-3 px-4 py-3.5 ${last ? "" : "border-b border-gray-100"}`}>
-      <span className="text-xl w-6 text-center" aria-hidden>{icon}</span>
+      <i className={`ti ${icon} text-xl w-6 text-center ${danger ? "text-red-500" : "text-gray-500"}`} aria-hidden="true" />
       <div className="flex-1 min-w-0">
         <p className={`text-sm font-semibold ${danger ? "text-red-500" : "text-gray-700"}`}>{label}</p>
         {sub && <p className="text-xs text-gray-400 mt-0.5">{sub}</p>}
@@ -66,10 +66,10 @@ export default function SettingsPage() {
                     <p className="text-xs text-gray-400">已登录 Signed in</p>
                   </div>
                   {billingOn && isPro && (
-                    <span className="text-xs font-bold text-brand-600 bg-brand-50 rounded-full px-2.5 py-1">💎 Pro</span>
+                    <span className="text-xs font-bold text-brand-600 bg-brand-50 rounded-full px-2.5 py-1"><i className="ti ti-diamond" aria-hidden="true" /> Pro</span>
                   )}
                 </div>
-                <Row icon="🚪" label="退出登录 Sign out" danger last
+                <Row icon="ti-logout" label="退出登录 Sign out" danger last
                   onClick={async () => { await signOut(); router.push("/parent/dashboard"); }} />
               </Group>
             ) : (
@@ -77,7 +77,7 @@ export default function SettingsPage() {
                 <div className="px-4 py-4">
                   <p className="text-sm text-gray-500 mb-3 text-center">登录后云端保存，换设备不丢失</p>
                   <Link href="/auth/login" className="block bg-brand-500 text-white font-bold rounded-lg py-3 text-sm text-center hover:bg-brand-600 active:scale-95 transition-all">
-                    📧 邮箱登录 Email login
+                    邮箱登录 Email login
                   </Link>
                   <OAuthButtons onError={setError} />
                   {error && (
@@ -91,7 +91,7 @@ export default function SettingsPage() {
               </Group>
             )
           ) : (
-            <Group><Row icon="⚙️" label="账户系统未启用" sub="未配置 Supabase" last /></Group>
+            <Group><Row icon="ti-settings" label="账户系统未启用" sub="未配置 Supabase" last /></Group>
           )}
         </section>
 
@@ -101,10 +101,10 @@ export default function SettingsPage() {
             <Label>订阅 Subscription</Label>
             <Group>
               {isPro ? (
-                <Row href="/parent/upgrade" icon="💎" label="订阅管理 Manage"
+                <Row href="/parent/upgrade" icon="ti-diamond" label="订阅管理 Manage"
                   sub={`${plan === "monthly" ? "月付 Monthly" : "年付 Annual"}${validUntil ? ` · 有效期至 ${validUntil}` : ""}`} last />
               ) : (
-                <Row href="/parent/upgrade" icon="💎" label="升级 Pro Upgrade" sub="解锁 AI 识别、AI 批改与提醒" last />
+                <Row href="/parent/upgrade" icon="ti-diamond" label="升级 Pro Upgrade" sub="解锁 AI 识别、AI 批改与提醒" last />
               )}
             </Group>
           </section>
@@ -114,8 +114,8 @@ export default function SettingsPage() {
         <section>
           <Label>提醒 Reminders</Label>
           <Group>
-            <Row icon="📧" label="邮件提醒 Email" sub="听写前周末与前一晚自动发送到你的邮箱" />
-            <Row href="/parent/dashboard" icon="📅" label="日历提醒 Calendar" sub="在主页「导出整学期到日历」生成 .ics" last />
+            <Row icon="ti-mail" label="邮件提醒 Email" sub="听写前周末与前一晚自动发送到你的邮箱" />
+            <Row href="/parent/dashboard" icon="ti-calendar" label="日历提醒 Calendar" sub="在主页「导出整学期到日历」生成 .ics" last />
           </Group>
           {billingOn && !isPro && (
             <p className="text-[11px] text-gray-400 mt-2 px-1">提醒为 Pro 功能 · Reminders are a Pro feature.</p>
@@ -126,8 +126,8 @@ export default function SettingsPage() {
         <section>
           <Label>通用 General</Label>
           <Group>
-            <Row href="/parent/children" icon="👨‍👧" label="孩子管理 Children" sub="添加 / 编辑孩子资料" />
-            <Row icon="🌐" label="语言 Language" value="中英双语" last />
+            <Row href="/parent/children" icon="ti-users" label="孩子管理 Children" sub="添加 / 编辑孩子资料" />
+            <Row icon="ti-world" label="语言 Language" value="中英双语" last />
           </Group>
         </section>
 

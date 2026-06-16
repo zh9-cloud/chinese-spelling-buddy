@@ -48,6 +48,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             and still served from the CDN, so only used glyphs download. */}
         <link rel="preconnect" href="https://cdn.jsdelivr.net" crossOrigin="anonymous" />
         <link rel="stylesheet" href="/fonts/lxgw-wenkai.css" />
+        {/* Tabler outline icons (webfont) — used via <i className="ti ti-name" /> */}
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.44.0/dist/tabler-icons.min.css" />
       </head>
       <body className="antialiased font-sans">
         <AuthProvider>

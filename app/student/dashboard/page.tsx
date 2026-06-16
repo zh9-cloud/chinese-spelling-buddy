@@ -55,10 +55,10 @@ function StudentDashboardContent() {
 
   const ACTIONS = hero
     ? [
-        { href: `/student/learn?list=${hero.id}`, icon: "📖", label: "学习", en: "Learn", disabled: false },
-        { href: `/student/test?list=${hero.id}`, icon: "✏️", label: "测验", en: "Test", disabled: false },
-        { href: `/student/mistakes?child=${activeChildId}`, icon: "📕", label: "错字本", en: "Mistakes", disabled: !hasMistakes },
-        { href: `/student/handwriting?list=${hero.id}&child=${activeChildId}`, icon: "✍️", label: "AI 批改", en: "AI grade", disabled: false },
+        { href: `/student/learn?list=${hero.id}`, icon: "ti-book-2", color: "text-amber-500", label: "学习", en: "Learn", disabled: false },
+        { href: `/student/test?list=${hero.id}`, icon: "ti-pencil", color: "text-teal-600", label: "测验", en: "Test", disabled: false },
+        { href: `/student/mistakes?child=${activeChildId}`, icon: "ti-notebook", color: "text-rose-500", label: "错字本", en: "Mistakes", disabled: !hasMistakes },
+        { href: `/student/handwriting?list=${hero.id}&child=${activeChildId}`, icon: "ti-camera-check", color: "text-indigo-500", label: "AI 批改", en: "AI grade", disabled: false },
       ]
     : [];
 
@@ -102,13 +102,13 @@ function StudentDashboardContent() {
                 {ACTIONS.map((a) => (
                   a.disabled ? (
                     <div key={a.label} className="flex flex-col items-start gap-2 bg-white border border-gray-100 rounded-2xl px-4 py-4 opacity-40">
-                      <span className="text-2xl">{a.icon}</span>
+                      <i className={`ti ${a.icon} text-2xl text-gray-400`} aria-hidden="true" />
                       <span className="text-[15px] font-bold text-gray-500">{a.label} <span className="text-xs font-normal text-gray-400">{a.en}</span></span>
                     </div>
                   ) : (
                     <Link key={a.label} href={a.href}
                       className="flex flex-col items-start gap-2 bg-white border border-gray-200 rounded-2xl px-4 py-4 hover:border-gray-300 active:scale-95 transition-all">
-                      <span className="text-2xl">{a.icon}</span>
+                      <i className={`ti ${a.icon} text-2xl ${a.color}`} aria-hidden="true" />
                       <span className="text-[15px] font-bold text-gray-700">{a.label} <span className="text-xs font-normal text-gray-400">{a.en}</span></span>
                     </Link>
                   )
@@ -122,19 +122,19 @@ function StudentDashboardContent() {
               <div className="space-y-2.5">
                 <Link href={`/student/lists?child=${activeChildId}`}
                   className={`flex items-center gap-2.5 rounded-2xl px-4 py-3.5 font-bold text-[15px] active:scale-[0.99] transition-all ${theme.chip}`}>
-                  <span className="text-lg">🏫</span>老师布置的听写
-                  <span className="ml-auto opacity-60">›</span>
+                  <i className="ti ti-school text-xl" aria-hidden="true" />老师布置的听写
+                  <i className="ti ti-chevron-right ml-auto opacity-60" aria-hidden="true" />
                 </Link>
                 <div className="flex items-center gap-2.5 rounded-2xl px-4 py-3.5 font-bold text-[15px] bg-indigo-50 text-indigo-600">
-                  <span className="text-lg">📚</span>课本生词表 P1–P6
+                  <i className="ti ti-books text-xl" aria-hidden="true" />课本生词表 P1–P6
                   <span className="ml-auto text-[11px] font-bold bg-white text-indigo-500 rounded-full px-2 py-0.5">即将开放</span>
                 </div>
                 <div className="grid grid-cols-2 gap-2.5">
                   <div className="flex items-center gap-2 rounded-2xl px-4 py-3.5 font-bold text-[15px] bg-gray-100 text-gray-400">
-                    <span className="text-lg">🎤</span>口语<span className="ml-auto text-sm">🔒</span>
+                    <i className="ti ti-microphone text-xl" aria-hidden="true" />口语<i className="ti ti-lock ml-auto text-sm" aria-hidden="true" />
                   </div>
                   <div className="flex items-center gap-2 rounded-2xl px-4 py-3.5 font-bold text-[15px] bg-gray-100 text-gray-400">
-                    <span className="text-lg">✍️</span>写作<span className="ml-auto text-sm">🔒</span>
+                    <i className="ti ti-writing text-xl" aria-hidden="true" />写作<i className="ti ti-lock ml-auto text-sm" aria-hidden="true" />
                   </div>
                 </div>
                 <p className="text-center text-[11px] text-gray-300">口语、写作 — 敬请期待 coming soon</p>

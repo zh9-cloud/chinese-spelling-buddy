@@ -108,18 +108,13 @@ export default function ParentDashboard() {
     <AppShell
       title="家长 Parent"
       leftSlot={
-        <Link href="/settings" aria-label="设置" className="w-9 h-9 -ml-1 rounded-full flex items-center justify-center text-gray-500 hover:bg-gray-100">
-          <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-            <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-          </svg>
+        <Link href="/settings" aria-label="设置" className="w-9 h-9 -ml-1 rounded-full flex items-center justify-center text-gray-500 hover:bg-gray-100 active:scale-95 transition-all">
+          <i className="ti ti-settings text-2xl" aria-hidden="true" />
         </Link>
       }
       rightSlot={
         <Link href="/parent/add-dictation" aria-label="添加听写单" className="w-9 h-9 rounded-full bg-brand-500 text-white flex items-center justify-center hover:bg-brand-600 active:scale-95 transition-all">
-          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.4}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
-          </svg>
+          <i className="ti ti-plus text-2xl" aria-hidden="true" />
         </Link>
       }
       bottomBar={<BottomTabBar active="parent" />}
@@ -135,23 +130,21 @@ export default function ParentDashboard() {
 
         {inTrialMode && (
           <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3">
-            <p className="text-sm font-bold text-amber-800 mb-0.5">🧪 试用模式 · Trial Mode</p>
-            <p className="text-xs text-amber-700 leading-relaxed mb-2.5">
-              你正在免注册试用。词表与练习记录只保存在这台设备上，清除浏览器数据或更换设备就会丢失。
+            <p className="text-sm font-bold text-amber-800 mb-0.5 flex items-center gap-1.5">
+              <i className="ti ti-flask text-base" aria-hidden="true" /> 试用模式 · Trial Mode
+            </p>
+            <p className="text-xs text-amber-700 leading-relaxed">
+              你正在免注册试用。词表与练习记录只保存在这台设备上，清除浏览器数据或更换设备就会丢失。到「设置」可注册或登录以云端保存。
               <span className="block text-amber-600/80 mt-0.5">
-                You&apos;re using the app without an account — data is saved only on this device and isn&apos;t backed up.
+                You&apos;re using the app without an account — sign in from Settings to back up.
               </span>
             </p>
-            <div className="flex gap-2">
-              <Link href="/auth/signup" className="flex-1 text-center text-xs font-bold text-white bg-amber-500 hover:bg-amber-600 rounded-xl py-2 transition-colors">免费注册保存 Sign up</Link>
-              <Link href="/auth/login" className="flex-1 text-center text-xs font-bold text-amber-700 border border-amber-300 hover:bg-amber-100 rounded-xl py-2 transition-colors">已有账户 Log in</Link>
-            </div>
           </div>
         )}
 
         {billingOn && user && !inTrialMode && !isPro && (
           <Link href="/parent/upgrade" className="flex items-center justify-between rounded-2xl border border-brand-200 bg-brand-50 px-4 py-3 hover:border-brand-300 transition-colors">
-            <span className="text-sm font-bold text-gray-700">💎 升级 Pro · 解锁 AI 与提醒</span>
+            <span className="text-sm font-bold text-gray-700 flex items-center gap-1.5"><i className="ti ti-diamond text-brand-500" aria-hidden="true" />升级 Pro · 解锁 AI 与提醒</span>
             <span className="text-xs font-bold text-white bg-brand-500 rounded-full px-3 py-1">升级</span>
           </Link>
         )}
@@ -178,7 +171,7 @@ export default function ParentDashboard() {
                     </div>
                     <p className="text-base font-bold text-gray-800 cjk mb-1.5">{dict.title}</p>
                     <p className="flex items-center gap-1.5 text-xs text-gray-400">
-                      <span>🗓</span>{dict.dictationDate} {weekdayLabel(dict.dictationDate)} · {vocab} 词{sentences > 0 ? ` / ${sentences} 句` : ""}
+                      <i className="ti ti-calendar text-sm" aria-hidden="true" />{dict.dictationDate} {weekdayLabel(dict.dictationDate)} · {vocab} 词{sentences > 0 ? ` / ${sentences} 句` : ""}
                     </p>
                     <p className="text-[13px] text-gray-500 mt-2 cjk truncate">{head}<span className="text-gray-300">{more}</span></p>
                   </Link>
@@ -192,19 +185,19 @@ export default function ParentDashboard() {
         <section>
           <h2 className="text-xs font-bold text-gray-400 uppercase tracking-wide mb-2">添加 Add</h2>
           <div className="grid grid-cols-2 gap-3 mb-3">
-            <Link href="/parent/import" className="flex flex-col items-start gap-1.5 bg-brand-50 border border-brand-200 rounded-2xl px-4 py-3.5 hover:bg-brand-100 active:scale-95 transition-all">
-              <span className="text-2xl">📷</span>
+            <Link href="/parent/import" className="flex flex-col items-start gap-2 bg-brand-50 border border-brand-200 rounded-2xl px-4 py-3.5 hover:bg-brand-100 active:scale-95 transition-all">
+              <i className="ti ti-camera text-2xl text-brand-600" aria-hidden="true" />
               <span className="text-sm font-bold text-brand-700">拍照 / PDF</span>
             </Link>
-            <Link href="/parent/add-dictation" className="flex flex-col items-start gap-1.5 bg-white border border-gray-200 rounded-2xl px-4 py-3.5 hover:bg-gray-50 active:scale-95 transition-all">
-              <span className="text-2xl">✏️</span>
+            <Link href="/parent/add-dictation" className="flex flex-col items-start gap-2 bg-white border border-gray-200 rounded-2xl px-4 py-3.5 hover:bg-gray-50 active:scale-95 transition-all">
+              <i className="ti ti-pencil-plus text-2xl text-gray-500" aria-hidden="true" />
               <span className="text-sm font-bold text-gray-700">手动录入</span>
             </Link>
           </div>
           <button onClick={handleExportCalendar}
             className="w-full flex items-center gap-2 bg-white border border-gray-200 rounded-2xl px-4 py-3 text-sm font-semibold text-gray-600 hover:bg-gray-50 active:scale-[0.99] transition-all">
-            <span className="text-lg">📅</span>导出整学期到日历 (.ics)
-            <span className="ml-auto text-gray-300">›</span>
+            <i className="ti ti-calendar-plus text-xl text-indigo-500" aria-hidden="true" />导出整学期到日历 (.ics)
+            <i className="ti ti-chevron-right ml-auto text-gray-300" aria-hidden="true" />
           </button>
         </section>
 
@@ -218,8 +211,8 @@ export default function ParentDashboard() {
                 const score = isPast ? scoreForList(d.id) : null;
                 return (
                   <div key={d.id} className={`flex items-center gap-3 px-4 py-3 ${isPast ? "opacity-70" : ""}`}>
-                    <div className="text-center w-11 shrink-0">
-                      <p className="text-sm font-black text-gray-700">{Number(d.dictationDate.slice(8, 10))}</p>
+                    <div className="text-center w-12 shrink-0">
+                      <p className="text-sm font-black text-gray-700">{Number(d.dictationDate.slice(5, 7))}/{Number(d.dictationDate.slice(8, 10))}</p>
                       <p className="text-[11px] text-gray-400">{weekdayLabel(d.dictationDate)}</p>
                     </div>
                     <div className="flex-1 min-w-0">
