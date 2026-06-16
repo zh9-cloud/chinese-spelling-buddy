@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, Suspense } from "react";
+import { Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { AppShell } from "@/components/layout/AppShell";
@@ -26,8 +26,7 @@ function wordPreview(words: Word[]): { head: string; more: string } {
 function StudentDashboardContent() {
   const params = useSearchParams();
   const { store, getCoins } = useStore();
-  const initialChildId = params.get("child") ?? store.children[0]?.id ?? "";
-  const [activeChildId] = useState(initialChildId);
+  const activeChildId = params.get("child") ?? store.children[0]?.id ?? "";
 
   const childIndex = Math.max(0, store.children.findIndex((c) => c.id === activeChildId));
   const child = store.children[childIndex];
