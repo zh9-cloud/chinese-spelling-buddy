@@ -86,8 +86,10 @@ function StudentDashboardContent() {
                 <span className={`text-[11px] font-semibold rounded-full px-2.5 py-0.5 ${heroBadgeCls}`}>{heroBadge}</span>
                 <span className="ml-auto text-xs text-gray-500">{hero.dictationDate} {weekdayLabel(hero.dictationDate)}</span>
               </div>
-              <p className="text-xl font-bold text-gray-800 cjk mb-1">{hero.title}</p>
-              <p className="text-[13px] text-gray-500">{vocab} 个词{sentences > 0 ? ` · ${sentences} 个句子` : ""}</p>
+              <div className="flex items-baseline justify-between gap-3">
+                <p className="text-xl font-bold text-gray-800 cjk min-w-0">{hero.title}</p>
+                <p className="text-[13px] text-gray-500 shrink-0 whitespace-nowrap">{vocab} 个词{sentences > 0 ? ` · ${sentences} 个句子` : ""}</p>
+              </div>
               <p className="text-[14px] text-gray-600 mt-2 cjk truncate">{head}<span className="text-gray-300">{more}</span></p>
               <Link href={`/student/learn?list=${hero.id}`}
                 className={`mt-3.5 block text-center text-white font-bold rounded-xl py-3 text-[15px] active:scale-95 transition-all ${theme.btn}`}>
@@ -101,15 +103,21 @@ function StudentDashboardContent() {
               <div className="grid grid-cols-2 gap-3">
                 {ACTIONS.map((a) => (
                   a.disabled ? (
-                    <div key={a.label} className="flex flex-col items-start gap-2 bg-white border border-gray-100 rounded-2xl px-4 py-4 opacity-40">
-                      <i className={`ti ${a.icon} text-2xl text-gray-400`} aria-hidden="true" />
-                      <span className="text-[15px] font-bold text-gray-500">{a.label} <span className="text-xs font-normal text-gray-400">{a.en}</span></span>
+                    <div key={a.label} className="flex items-center gap-3 bg-white border border-gray-100 rounded-2xl px-4 py-4 opacity-40">
+                      <i className={`ti ${a.icon} text-[2.75rem] leading-none text-gray-400`} aria-hidden="true" />
+                      <span className="flex flex-col leading-tight">
+                        <span className="text-[15px] font-bold text-gray-500">{a.label}</span>
+                        <span className="text-xs text-gray-400">{a.en}</span>
+                      </span>
                     </div>
                   ) : (
                     <Link key={a.label} href={a.href}
-                      className="flex flex-col items-start gap-2 bg-white border border-gray-200 rounded-2xl px-4 py-4 hover:border-gray-300 active:scale-95 transition-all">
-                      <i className={`ti ${a.icon} text-2xl ${a.color}`} aria-hidden="true" />
-                      <span className="text-[15px] font-bold text-gray-700">{a.label} <span className="text-xs font-normal text-gray-400">{a.en}</span></span>
+                      className="flex items-center gap-3 bg-white border border-gray-200 rounded-2xl px-4 py-4 hover:border-gray-300 active:scale-95 transition-all">
+                      <i className={`ti ${a.icon} text-[2.75rem] leading-none ${a.color}`} aria-hidden="true" />
+                      <span className="flex flex-col leading-tight">
+                        <span className="text-[15px] font-bold text-gray-700">{a.label}</span>
+                        <span className="text-xs text-gray-400">{a.en}</span>
+                      </span>
                     </Link>
                   )
                 ))}

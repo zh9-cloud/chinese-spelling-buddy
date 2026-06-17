@@ -4,7 +4,6 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { AppIcon } from "@/components/ui/AppIcon";
-import { OAuthButtons } from "@/components/ui/OAuthButtons";
 import { getSupabase, isSupabaseConfigured } from "@/lib/supabase";
 import { useAuth } from "@/context/AuthContext";
 
@@ -105,8 +104,6 @@ export default function LoginPage() {
             </Link>
           </div>
         </form>
-
-        <OAuthButtons onError={setError} />
 
         <div className="mt-6 text-center space-y-2">
           <p className="text-sm text-gray-500">

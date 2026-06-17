@@ -185,13 +185,13 @@ export default function ParentDashboard() {
         <section>
           <h2 className="text-xs font-bold text-gray-400 uppercase tracking-wide mb-2">添加 Add</h2>
           <div className="grid grid-cols-2 gap-3 mb-3">
-            <Link href="/parent/import" className="flex flex-col items-start gap-2 bg-brand-50 border border-brand-200 rounded-2xl px-4 py-3.5 hover:bg-brand-100 active:scale-95 transition-all">
-              <i className="ti ti-camera text-2xl text-brand-600" aria-hidden="true" />
-              <span className="text-sm font-bold text-brand-700">拍照 / PDF</span>
+            <Link href="/parent/import" className="flex items-center gap-3 bg-brand-50 border border-brand-200 rounded-2xl px-4 py-4 hover:bg-brand-100 active:scale-95 transition-all">
+              <i className="ti ti-camera text-[2.75rem] leading-none text-brand-600" aria-hidden="true" />
+              <span className="text-[15px] font-bold text-brand-700">拍照 / PDF</span>
             </Link>
-            <Link href="/parent/add-dictation" className="flex flex-col items-start gap-2 bg-white border border-gray-200 rounded-2xl px-4 py-3.5 hover:bg-gray-50 active:scale-95 transition-all">
-              <i className="ti ti-pencil-plus text-2xl text-gray-500" aria-hidden="true" />
-              <span className="text-sm font-bold text-gray-700">手动录入</span>
+            <Link href="/parent/add-dictation" className="flex items-center gap-3 bg-white border border-gray-200 rounded-2xl px-4 py-4 hover:bg-gray-50 active:scale-95 transition-all">
+              <i className="ti ti-pencil-plus text-[2.75rem] leading-none text-gray-500" aria-hidden="true" />
+              <span className="text-[15px] font-bold text-gray-700">手动录入</span>
             </Link>
           </div>
           <button onClick={handleExportCalendar}
