@@ -127,6 +127,7 @@ export default function SettingsPage() {
           <Label>通用 General</Label>
           <Group>
             <Row href="/parent/children" icon="ti-users" label="孩子管理 Children" sub="添加 / 编辑孩子资料" />
+            <Row href="/feedback" icon="ti-message-circle" label="意见反馈 Feedback" sub="建议、问题、想要的功能 — 发消息给我" />
             <Row icon="ti-world" label="语言 Language" value="中英双语" last />
           </Group>
         </section>
