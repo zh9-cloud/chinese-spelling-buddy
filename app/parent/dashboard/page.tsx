@@ -108,7 +108,7 @@ export default function ParentDashboard() {
     <AppShell
       title="家长 Parent"
       leftSlot={
-        <Link href="/settings" aria-label="设置" className="w-9 h-9 -ml-1 rounded-full flex items-center justify-center text-gray-500 hover:bg-gray-100 active:scale-95 transition-all">
+        <Link href="/settings" aria-label="设置" className="w-9 h-9 -ml-1 rounded-full bg-brand-500 text-white flex items-center justify-center hover:bg-brand-600 active:scale-95 transition-all">
           <i className="ti ti-settings text-2xl" aria-hidden="true" />
         </Link>
       }
