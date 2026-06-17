@@ -16,6 +16,8 @@ import type { DictationList, Word } from "@/lib/types";
 
 // One accent colour (dot) per child slot.
 const CHILD_DOT = ["bg-amber-400", "bg-teal-400", "bg-purple-400"];
+const CHILD_BORDER = ["border-amber-400", "border-teal-400", "border-purple-400"];
+const CHILD_TEXT = ["text-amber-600", "text-teal-700", "text-purple-600"];
 
 function wordPreview(words: Word[]): { head: string; more: string } {
   const arr = words.map((w) => w.word);
@@ -108,8 +110,8 @@ export default function ParentDashboard() {
     <AppShell
       title="家长 Parent"
       leftSlot={
-        <Link href="/settings" aria-label="设置" className="w-9 h-9 -ml-1 rounded-full bg-brand-500 text-white flex items-center justify-center hover:bg-brand-600 active:scale-95 transition-all">
-          <i className="ti ti-settings text-2xl" aria-hidden="true" />
+        <Link href="/settings" aria-label="设置" className="w-10 h-10 -ml-1 rounded-full bg-brand-500 text-white flex items-center justify-center hover:bg-brand-600 active:scale-95 transition-all">
+          <i className="ti ti-settings text-[28px]" aria-hidden="true" />
         </Link>
       }
       rightSlot={
@@ -155,6 +157,7 @@ export default function ParentDashboard() {
             <h2 className="text-xs font-bold text-gray-400 uppercase tracking-wide mb-2">下一次听写 Next up</h2>
             <div className="space-y-3">
               {nextByChild.map(({ child, dict }) => {
+                const ci = childIdx(child.id) % CHILD_DOT.length;
                 const days = getDaysUntil(dict.dictationDate);
                 const badge = days <= 0 ? "今天" : days === 1 ? "明天" : `${days} 天后`;
                 const badgeCls = days <= 1 ? "bg-red-50 text-red-500" : days <= 5 ? "bg-amber-50 text-amber-600" : "bg-gray-100 text-gray-500";
@@ -163,10 +166,10 @@ export default function ParentDashboard() {
                 const vocab = dict.words.length - sentences;
                 return (
                   <Link key={dict.id} href={`/student/dashboard?child=${child.id}`}
-                    className="block bg-white rounded-2xl border border-gray-200 p-4 hover:border-gray-300 active:scale-[0.99] transition-all">
+                    className={`block bg-white rounded-2xl border-2 ${CHILD_BORDER[ci]} p-4 active:scale-[0.99] transition-all`}>
                     <div className="flex items-center gap-2 mb-1.5">
-                      <span className={`w-2.5 h-2.5 rounded-full ${CHILD_DOT[childIdx(child.id) % CHILD_DOT.length]}`} />
-                      <span className="text-xs font-bold text-gray-500">{child.name} · {child.grade} {child.chineseType === "Higher" ? "高级华文" : "华文"}</span>
+                      <span className={`w-2.5 h-2.5 rounded-full ${CHILD_DOT[ci]}`} />
+                      <span className={`text-xs font-bold ${CHILD_TEXT[ci]}`}>{child.name} · {child.grade} {child.chineseType === "Higher" ? "高级华文" : "华文"}</span>
                       <span className={`ml-auto text-[11px] font-semibold rounded-full px-2.5 py-0.5 ${badgeCls}`}>{badge}</span>
                     </div>
                     <p className="text-base font-bold text-gray-800 cjk mb-1.5">{dict.title}</p>
@@ -186,17 +189,27 @@ export default function ParentDashboard() {
           <h2 className="text-xs font-bold text-gray-400 uppercase tracking-wide mb-2">添加 Add</h2>
           <div className="grid grid-cols-2 gap-3 mb-3">
             <Link href="/parent/import" className="flex items-center gap-3 bg-brand-50 border border-brand-200 rounded-2xl px-4 py-4 hover:bg-brand-100 active:scale-95 transition-all">
-              <i className="ti ti-camera text-[2.75rem] leading-none text-brand-600" aria-hidden="true" />
-              <span className="text-[15px] font-bold text-brand-700">拍照 / PDF</span>
+              <i className="ti ti-camera text-[2.75rem] leading-none text-brand-600 shrink-0" aria-hidden="true" />
+              <span className="flex flex-col leading-tight">
+                <span className="text-[15px] font-bold text-brand-700">拍照 / PDF</span>
+                <span className="text-xs text-brand-500/80">Scan & import</span>
+              </span>
             </Link>
             <Link href="/parent/add-dictation" className="flex items-center gap-3 bg-white border border-gray-200 rounded-2xl px-4 py-4 hover:bg-gray-50 active:scale-95 transition-all">
-              <i className="ti ti-pencil-plus text-[2.75rem] leading-none text-gray-500" aria-hidden="true" />
-              <span className="text-[15px] font-bold text-gray-700">手动录入</span>
+              <i className="ti ti-pencil-plus text-[2.75rem] leading-none text-gray-500 shrink-0" aria-hidden="true" />
+              <span className="flex flex-col leading-tight">
+                <span className="text-[15px] font-bold text-gray-700">手动录入</span>
+                <span className="text-xs text-gray-400">Type by hand</span>
+              </span>
             </Link>
           </div>
           <button onClick={handleExportCalendar}
-            className="w-full flex items-center gap-2 bg-white border border-gray-200 rounded-2xl px-4 py-3 text-sm font-semibold text-gray-600 hover:bg-gray-50 active:scale-[0.99] transition-all">
-            <i className="ti ti-calendar-plus text-xl text-indigo-500" aria-hidden="true" />导出整学期到日历 (.ics)
+            className="w-full flex items-center gap-3 bg-white border border-gray-200 rounded-2xl px-4 py-3 text-left hover:bg-gray-50 active:scale-[0.99] transition-all">
+            <i className="ti ti-calendar-plus text-2xl text-indigo-500 shrink-0" aria-hidden="true" />
+            <span className="flex flex-col leading-tight">
+              <span className="text-sm font-semibold text-gray-600">导出整学期到日历 (.ics)</span>
+              <span className="text-xs text-gray-400">Export term to calendar</span>
+            </span>
             <i className="ti ti-chevron-right ml-auto text-gray-300" aria-hidden="true" />
           </button>
         </section>
@@ -209,15 +222,17 @@ export default function ParentDashboard() {
               {otherLists.map((d) => {
                 const isPast = d.dictationDate < today;
                 const score = isPast ? scoreForList(d.id) : null;
+                const completed = !!score;
+                const ci = childIdx(d.childId) % CHILD_TEXT.length;
                 return (
-                  <div key={d.id} className={`flex items-center gap-3 px-4 py-3 ${isPast ? "opacity-70" : ""}`}>
+                  <div key={d.id} className={`flex items-center gap-3 px-4 py-3 ${completed ? "opacity-60" : ""}`}>
                     <div className="text-center w-12 shrink-0">
-                      <p className="text-sm font-black text-gray-700">{Number(d.dictationDate.slice(5, 7))}/{Number(d.dictationDate.slice(8, 10))}</p>
+                      <p className={`text-sm font-black ${completed ? "text-gray-400" : "text-gray-700"}`}>{Number(d.dictationDate.slice(5, 7))}/{Number(d.dictationDate.slice(8, 10))}</p>
                       <p className="text-[11px] text-gray-400">{weekdayLabel(d.dictationDate)}</p>
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-semibold text-gray-700 truncate cjk">{d.title}</p>
-                      <p className="text-xs text-gray-400 mt-0.5">{childName(d.childId)} · {d.dictationDate}</p>
+                      <p className={`text-sm font-bold truncate cjk ${completed ? "text-gray-400" : CHILD_TEXT[ci]}`}>{d.title}</p>
+                      <p className={`text-xs mt-0.5 ${completed ? "text-gray-400" : `font-semibold ${CHILD_TEXT[ci]}`}`}>{childName(d.childId)} · {d.dictationDate}</p>
                     </div>
                     {score ? (
                       <span className="text-[11px] font-bold text-jade-600 bg-jade-50 rounded-full px-2 py-0.5 shrink-0">{score.correct}/{score.total}</span>
