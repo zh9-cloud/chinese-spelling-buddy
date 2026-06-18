@@ -101,7 +101,7 @@ function StudentDashboardContent() {
 
             {/* Streak / 连续打卡 */}
             <div className="rounded-2xl border border-gray-200 bg-white px-4 py-3.5">
-              <div className="flex items-center gap-2 mb-2.5">
+              <div className="flex items-center gap-2 mb-0.5">
                 <i className={`ti ti-flame text-2xl ${streak.current > 0 ? "text-orange-500" : "text-gray-300"}`} aria-hidden="true" />
                 <span className="text-[15px] font-bold text-gray-800">
                   {streak.current > 0 ? <>连续打卡 <span className="text-orange-500">{streak.current}</span> 天</> : "今天还没练，开始打卡！"}
@@ -110,6 +110,9 @@ function StudentDashboardContent() {
                   <span className="ml-auto text-[11px] text-gray-400">最长 {streak.longest} 天</span>
                 )}
               </div>
+              <p className="text-[11px] text-gray-400 ml-8 mb-2.5">
+                {streak.current > 0 ? `${streak.current}-day streak — keep it going!` : "Practice today to start a streak"}
+              </p>
               <div className="flex justify-between">
                 {streak.last7.map((d) => (
                   <div key={d.date} className="flex flex-col items-center gap-1">
@@ -124,8 +127,10 @@ function StudentDashboardContent() {
                 ))}
               </div>
               <Link href={`/report?child=${activeChildId}`}
-                className="mt-3 flex items-center justify-center gap-1.5 text-xs font-semibold text-gray-500 border-t border-gray-100 pt-2.5 hover:text-brand-600">
-                <i className="ti ti-chart-bar" aria-hidden="true" />本周报告 · 分享成绩
+                className="mt-3 flex items-center justify-center gap-2 text-sm font-bold text-brand-600 border-t border-gray-100 pt-3 hover:opacity-80 active:scale-95 transition-all">
+                <i className="ti ti-chart-bar text-xl" aria-hidden="true" />
+                本周报告 · 分享成绩
+                <span className="text-xs font-normal text-gray-400">Weekly report</span>
                 <i className="ti ti-chevron-right" aria-hidden="true" />
               </Link>
             </div>
