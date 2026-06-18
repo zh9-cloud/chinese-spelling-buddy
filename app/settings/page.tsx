@@ -110,6 +110,20 @@ export default function SettingsPage() {
           </section>
         )}
 
+        {/* ── Rewards explainer ── */}
+        <section>
+          <Label>奖励 Rewards</Label>
+          <div className="rounded-2xl border border-gray-200 bg-white p-4">
+            <p className="text-sm font-semibold text-gray-700 mb-1.5 flex items-center gap-1.5">
+              <i className="ti ti-diamond text-brand-500" aria-hidden="true" /> 钻石怎么用 How diamonds work
+            </p>
+            <p className="text-xs text-gray-500 leading-relaxed">
+              孩子每答对一个词就得 1 颗钻石 💎。建议你和孩子约定：攒够一定数量（例如 50 颗）就给一个真实的小奖励——一张贴纸、选周末活动、一次小零食…… 让钻石成为坚持练习的真实动力。
+              <span className="block text-gray-400 mt-1">Agree on a reward when your child reaches a diamond goal — it turns practice into a habit.</span>
+            </p>
+          </div>
+        </section>
+
         {/* ── Referral ── */}
         <section>
           <Label>邀请 Invite</Label>

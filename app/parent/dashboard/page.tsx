@@ -5,6 +5,7 @@ import Link from "next/link";
 import { AppShell } from "@/components/layout/AppShell";
 import { BottomTabBar } from "@/components/layout/BottomTabBar";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { GoldCoin } from "@/components/ui/GoldCoin";
 import { useStore } from "@/context/StoreContext";
 import { useAuth } from "@/context/AuthContext";
 import { useEntitlement } from "@/lib/useEntitlement";
@@ -180,6 +181,30 @@ export default function ParentDashboard() {
                   </Link>
                 );
               })}
+            </div>
+          </section>
+        )}
+
+        {/* ── Diamond rewards (nudge parents to reward kids) ── */}
+        {children.length > 0 && (
+          <section>
+            <h2 className="text-xs font-bold text-gray-400 uppercase tracking-wide mb-2">钻石奖励 Rewards</h2>
+            <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
+              {children.map((c) => {
+                const ci = childIdx(c.id) % CHILD_DOT.length;
+                return (
+                  <div key={c.id} className="flex items-center gap-3 px-4 py-3 border-b border-gray-100">
+                    <span className={`w-2.5 h-2.5 rounded-full ${CHILD_DOT[ci]}`} />
+                    <span className={`text-sm font-bold ${CHILD_TEXT[ci]}`}>{c.name}</span>
+                    <span className="ml-auto flex items-center gap-1.5 text-base font-black text-amber-600">
+                      <GoldCoin size="sm" /> {getCoins(c.id)}
+                    </span>
+                  </div>
+                );
+              })}
+              <Link href="/settings" className="block px-4 py-2.5 text-xs text-gray-500 hover:bg-gray-50">
+                💡 攒够了别忘记奖励孩子哦 · 怎么用钻石？
+              </Link>
             </div>
           </section>
         )}
