@@ -13,7 +13,7 @@ import { PLAN_DISPLAY } from "@/lib/billing";
 export const maxDuration = 30;
 
 export async function GET(req: NextRequest) {
-  const adminEmail = (process.env.ADMIN_EMAIL2 || process.env.ADMIN_EMAIL)?.trim().toLowerCase();
+  const adminEmail = process.env.ADMIN_EMAIL?.trim().toLowerCase();
   const sb = serviceSupabase();
   if (!sb) return NextResponse.json({ error: "Service not configured" }, { status: 503 });
   if (!adminEmail) return NextResponse.json({ error: "ADMIN_EMAIL not set" }, { status: 503 });

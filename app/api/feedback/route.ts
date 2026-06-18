@@ -13,8 +13,7 @@ const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export async function POST(req: NextRequest) {
   const resendKey = process.env.RESEND_API_KEY;
-  // Prefer ADMIN_EMAIL2 (owner's Vercel var), fall back to ADMIN_EMAIL.
-  const to = process.env.ADMIN_EMAIL2 || process.env.ADMIN_EMAIL;
+  const to = process.env.ADMIN_EMAIL;
   const from = process.env.REMINDER_FROM || "Chinese Spelling Buddy <onboarding@resend.dev>";
   if (!resendKey || !to) {
     return NextResponse.json({ error: "反馈服务未配置 · Feedback not configured" }, { status: 503 });
