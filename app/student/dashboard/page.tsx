@@ -123,6 +123,11 @@ function StudentDashboardContent() {
                   </div>
                 ))}
               </div>
+              <Link href={`/report?child=${activeChildId}`}
+                className="mt-3 flex items-center justify-center gap-1.5 text-xs font-semibold text-gray-500 border-t border-gray-100 pt-2.5 hover:text-brand-600">
+                <i className="ti ti-chart-bar" aria-hidden="true" />本周报告 · 分享成绩
+                <i className="ti ti-chevron-right" aria-hidden="true" />
+              </Link>
             </div>
 
             {/* Practice grid */}
