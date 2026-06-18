@@ -9,6 +9,7 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { GoldCoin } from "@/components/ui/GoldCoin";
 import { useStore } from "@/context/StoreContext";
 import { getUpcomingDictation, weekdayLabel, getDaysUntil } from "@/lib/mockData";
+import { computeStreak } from "@/lib/streak";
 import type { Word } from "@/lib/types";
 
 // One theme per child slot (paper hero, accent button, chips).
@@ -32,6 +33,7 @@ function StudentDashboardContent() {
   const child = store.children[childIndex];
   const theme = CHILD_THEME[childIndex % CHILD_THEME.length];
   const coins = getCoins(activeChildId);
+  const streak = computeStreak(store.sessions, activeChildId);
 
   // Hero = the next upcoming dictation, else the most recent one.
   const upcoming = child ? getUpcomingDictation(activeChildId, store.dictationLists) : undefined;
@@ -95,6 +97,32 @@ function StudentDashboardContent() {
                 className={`mt-3.5 block text-center text-white font-bold rounded-xl py-3 text-[15px] active:scale-95 transition-all ${theme.btn}`}>
                 开始学习 →
               </Link>
+            </div>
+
+            {/* Streak / 连续打卡 */}
+            <div className="rounded-2xl border border-gray-200 bg-white px-4 py-3.5">
+              <div className="flex items-center gap-2 mb-2.5">
+                <i className={`ti ti-flame text-2xl ${streak.current > 0 ? "text-orange-500" : "text-gray-300"}`} aria-hidden="true" />
+                <span className="text-[15px] font-bold text-gray-800">
+                  {streak.current > 0 ? <>连续打卡 <span className="text-orange-500">{streak.current}</span> 天</> : "今天还没练，开始打卡！"}
+                </span>
+                {streak.longest > 1 && (
+                  <span className="ml-auto text-[11px] text-gray-400">最长 {streak.longest} 天</span>
+                )}
+              </div>
+              <div className="flex justify-between">
+                {streak.last7.map((d) => (
+                  <div key={d.date} className="flex flex-col items-center gap-1">
+                    <span className={[
+                      "w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold",
+                      d.practiced ? "bg-orange-500 text-white" : d.isToday ? "border-2 border-orange-300 text-orange-400" : "bg-gray-100 text-gray-300",
+                    ].join(" ")}>
+                      {d.practiced ? <i className="ti ti-check" aria-hidden="true" /> : ""}
+                    </span>
+                    <span className={`text-[10px] ${d.isToday ? "text-orange-500 font-bold" : "text-gray-400"}`}>{d.weekday}</span>
+                  </div>
+                ))}
+              </div>
             </div>
 
             {/* Practice grid */}
