@@ -3,6 +3,7 @@ import { Nunito } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/context/AuthContext";
 import { StoreProvider } from "@/context/StoreContext";
+import { ReferralRedeemer } from "@/components/ReferralRedeemer";
 
 // Nunito — rounded, friendly, great for children, works well alongside CJK system fonts
 const nunito = Nunito({
@@ -54,6 +55,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className="antialiased font-sans">
         <AuthProvider>
           <StoreProvider>
+            <ReferralRedeemer />
             {children}
           </StoreProvider>
         </AuthProvider>

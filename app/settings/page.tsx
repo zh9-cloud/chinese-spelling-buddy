@@ -110,6 +110,14 @@ export default function SettingsPage() {
           </section>
         )}
 
+        {/* ── Referral ── */}
+        <section>
+          <Label>邀请 Invite</Label>
+          <Group>
+            <Row href="/referral" icon="ti-gift" label="邀请好友 Invite friends" sub="双方各得 1 个月 Pro · 可叠加" last />
+          </Group>
+        </section>
+
         {/* ── Reminders ── */}
         <section>
           <Label>提醒 Reminders</Label>

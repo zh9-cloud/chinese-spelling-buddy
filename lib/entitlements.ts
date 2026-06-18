@@ -43,19 +43,24 @@ async function userFromRequest(req: NextRequest, sb: SupabaseClient): Promise<st
   return data.user.id;
 }
 
-/** True when the user has a currently-valid paid subscription. */
+/** True when the user has a currently-valid paid subscription OR a referral grant. */
 export async function isProUser(sb: SupabaseClient, userId: string): Promise<boolean> {
-  const { data } = await sb
-    .from("subscriptions")
-    .select("status,current_period_end")
-    .eq("user_id", userId)
-    .maybeSingle();
-  if (!data) return false;
-  const active = data.status === "active" || data.status === "trialing";
-  if (!active) return false;
-  // Grace: treat missing period end as active; otherwise require it to be in the future.
-  if (!data.current_period_end) return true;
-  return new Date(data.current_period_end).getTime() > Date.now();
+  const [{ data: sub }, { data: grant }] = await Promise.all([
+    sb.from("subscriptions").select("status,current_period_end").eq("user_id", userId).maybeSingle(),
+    sb.from("pro_grants").select("pro_until").eq("user_id", userId).maybeSingle(),
+  ]);
+
+  // Stripe subscription
+  if (sub) {
+    const active = sub.status === "active" || sub.status === "trialing";
+    if (active && (!sub.current_period_end || new Date(sub.current_period_end).getTime() > Date.now())) {
+      return true;
+    }
+  }
+  // Referral / manual Pro grant
+  if (grant?.pro_until && new Date(grant.pro_until).getTime() > Date.now()) return true;
+
+  return false;
 }
 
 export type QuotaCode = "login_required" | "quota_exceeded";
