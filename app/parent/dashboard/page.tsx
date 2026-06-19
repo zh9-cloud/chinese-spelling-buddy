@@ -116,8 +116,8 @@ export default function ParentDashboard() {
         </Link>
       }
       rightSlot={
-        <Link href="/parent/add-dictation" aria-label="添加听写单" className="w-9 h-9 rounded-full bg-brand-500 text-white flex items-center justify-center hover:bg-brand-600 active:scale-95 transition-all">
-          <i className="ti ti-plus text-2xl" aria-hidden="true" />
+        <Link href="/parent/add-dictation" aria-label="添加听写单" className="w-10 h-10 rounded-full bg-brand-500 text-white flex items-center justify-center hover:bg-brand-600 active:scale-95 transition-all">
+          <i className="ti ti-plus text-[28px]" aria-hidden="true" />
         </Link>
       }
       bottomBar={<BottomTabBar active="parent" />}
@@ -193,7 +193,7 @@ export default function ParentDashboard() {
               {children.map((c) => {
                 const ci = childIdx(c.id) % CHILD_DOT.length;
                 return (
-                  <div key={c.id} className="flex items-center gap-3 px-4 py-3 border-b border-gray-100">
+                  <div key={c.id} className="flex items-center gap-2.5 px-4 py-2 border-b border-gray-100">
                     <span className={`w-2.5 h-2.5 rounded-full ${CHILD_DOT[ci]}`} />
                     <span className={`text-sm font-bold ${CHILD_TEXT[ci]}`}>{c.name}</span>
                     <span className="ml-auto flex items-center gap-1.5 text-base font-black text-amber-600">
@@ -202,8 +202,9 @@ export default function ParentDashboard() {
                   </div>
                 );
               })}
-              <Link href="/settings" className="block px-4 py-2.5 text-xs text-gray-500 hover:bg-gray-50">
-                💡 攒够了别忘记奖励孩子哦 · 怎么用钻石？
+              <Link href="/settings" className="flex items-center gap-1.5 px-4 py-2 text-xs text-gray-500 hover:bg-gray-50">
+                💡 记得奖励孩子 · How to reward
+                <i className="ti ti-chevron-right ml-auto text-gray-300" aria-hidden="true" />
               </Link>
             </div>
           </section>

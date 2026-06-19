@@ -13,7 +13,7 @@ function Row({ href, onClick, icon, label, sub, value, danger, last }: {
   href?: string; onClick?: () => void; icon: string; label: string; sub?: string; value?: string; danger?: boolean; last?: boolean;
 }) {
   const inner = (
-    <div className={`flex items-center gap-3 px-4 py-3.5 ${last ? "" : "border-b border-gray-100"}`}>
+    <div className={`flex items-center gap-3 px-4 py-3 ${last ? "" : "border-b border-gray-100"}`}>
       <i className={`ti ${icon} text-xl w-6 text-center ${danger ? "text-red-500" : "text-gray-500"}`} aria-hidden="true" />
       <div className="flex-1 min-w-0">
         <p className={`text-sm font-semibold ${danger ? "text-red-500" : "text-gray-700"}`}>{label}</p>
@@ -49,7 +49,7 @@ export default function SettingsPage() {
 
   return (
     <AppShell title="设置 Settings" backHref="/parent/dashboard">
-      <div className="space-y-6 page-enter pb-10">
+      <div className="space-y-5 page-enter pb-10">
 
         {/* ── Account ── */}
         <section>
