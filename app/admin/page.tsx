@@ -24,6 +24,121 @@ function Stat({ label, value, sub }: { label: string; value: string | number; su
   );
 }
 
+interface Gift { email: string; proUntil: string; active: boolean }
+
+function fmtDate(iso: string) {
+  return new Date(iso).toLocaleDateString("en-CA", { timeZone: "Asia/Singapore" });
+}
+
+/** Owner tool: gift / revoke free Pro for colleagues by email. */
+function GiftPro() {
+  const [email, setEmail] = useState("");
+  const [months, setMonths] = useState(12);
+  const [busy, setBusy] = useState(false);
+  const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
+  const [gifts, setGifts] = useState<Gift[]>([]);
+
+  async function load() {
+    try {
+      const token = await getAccessToken();
+      const res = await fetch("/api/admin/grant", { headers: { Authorization: `Bearer ${token}` } });
+      if (res.ok) setGifts(((await res.json()) as { gifts: Gift[] }).gifts ?? []);
+    } catch { /* ignore */ }
+  }
+  useEffect(() => { load(); }, []);
+
+  async function post(payload: Record<string, unknown>): Promise<{ ok: boolean; data: Record<string, unknown> }> {
+    const token = await getAccessToken();
+    const res = await fetch("/api/admin/grant", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+      body: JSON.stringify(payload),
+    });
+    return { ok: res.ok, data: (await res.json()) as Record<string, unknown> };
+  }
+
+  async function grant() {
+    if (!email.trim()) { setMsg({ ok: false, text: "请输入邮箱" }); return; }
+    setBusy(true); setMsg(null);
+    const { ok, data } = await post({ email, months });
+    if (ok) {
+      setMsg({ ok: true, text: `✓ 已赠送 ${data.email} ${data.months} 个月 Pro（有效期至 ${fmtDate(String(data.proUntil))}）` });
+      setEmail("");
+      await load();
+    } else {
+      setMsg({ ok: false, text: String(data.error ?? "操作失败") });
+    }
+    setBusy(false);
+  }
+
+  async function revoke(target: string) {
+    if (!confirm(`确定收回 ${target} 的 Pro？`)) return;
+    setBusy(true); setMsg(null);
+    const { ok, data } = await post({ email: target, revoke: true });
+    setMsg(ok ? { ok: true, text: `已收回 ${target} 的 Pro` } : { ok: false, text: String(data.error ?? "操作失败") });
+    await load();
+    setBusy(false);
+  }
+
+  return (
+    <div>
+      <p className="text-xs font-bold text-gray-400 uppercase tracking-wide mb-2">🎁 老师赠送 Pro · Gift Pro</p>
+      <div className="rounded-2xl border border-gray-200 bg-white p-4 space-y-3">
+        <p className="text-xs text-gray-500">
+          同事需先用该邮箱<strong>免费注册</strong>，再在这里输入邮箱即可赠送 Pro。
+        </p>
+        <div className="flex gap-2">
+          <input
+            type="email" inputMode="email" autoCapitalize="none" placeholder="同事的邮箱 colleague@email.com"
+            value={email} onChange={(e) => setEmail(e.target.value)}
+            className="flex-1 min-w-0 rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none"
+          />
+          <select value={months} onChange={(e) => setMonths(Number(e.target.value))}
+            className="rounded-lg border border-gray-300 px-2 py-2 text-sm bg-white shrink-0">
+            {[1, 3, 6, 12, 24].map((m) => <option key={m} value={m}>{m} 个月</option>)}
+          </select>
+        </div>
+        <button onClick={grant} disabled={busy}
+          className="w-full bg-brand-500 hover:bg-brand-600 disabled:opacity-60 text-white font-bold rounded-lg py-2.5 text-sm transition-all active:scale-95">
+          {busy ? "处理中…" : "赠送 / 续期 Pro"}
+        </button>
+        {msg && (
+          <p className={`text-xs rounded-lg px-3 py-2 ${msg.ok ? "text-jade-700 bg-jade-50 border border-jade-200" : "text-red-600 bg-red-50 border border-red-200"}`}>
+            {msg.text}
+          </p>
+        )}
+
+        {gifts.length > 0 && (
+          <div className="pt-1">
+            <p className="text-[11px] font-bold text-gray-400 uppercase tracking-wide mb-1.5">已赠送 {gifts.length} 人</p>
+            <div className="divide-y divide-gray-100">
+              {gifts.map((g) => (
+                <div key={g.email} className="flex items-center justify-between gap-2 py-2">
+                  <div className="min-w-0">
+                    <p className="text-sm text-gray-700 truncate">{g.email}</p>
+                    <p className="text-[11px] text-gray-400">
+                      {g.active ? `有效至 ${fmtDate(g.proUntil)}` : `已过期 ${fmtDate(g.proUntil)}`}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2 shrink-0">
+                    <span className={`text-[11px] font-bold rounded-full px-2 py-0.5 ${g.active ? "text-jade-700 bg-jade-50" : "text-gray-400 bg-gray-100"}`}>
+                      {g.active ? "Pro" : "—"}
+                    </span>
+                    {g.active && (
+                      <button onClick={() => revoke(g.email)} disabled={busy}
+                        className="text-[11px] font-semibold text-red-500 hover:underline disabled:opacity-60">收回</button>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 export default function AdminPage() {
   const { user, authLoading } = useAuth();
   const [stats, setStats] = useState<Stats | null>(null);
@@ -125,6 +240,9 @@ export default function AdminPage() {
                 </div>
               </div>
             )}
+
+            {/* Gift Pro to colleagues */}
+            <GiftPro />
 
             {/* Notes */}
             <div className="rounded-2xl bg-amber-50 border border-amber-200 px-4 py-3 text-xs text-amber-700 leading-relaxed">

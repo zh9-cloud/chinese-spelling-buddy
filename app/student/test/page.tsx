@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect, Suspense } from "react";
+import { useState, useRef, useEffect, useMemo, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { AppShell } from "@/components/layout/AppShell";
 import { Button } from "@/components/ui/Button";
@@ -13,6 +13,7 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { useStore } from "@/context/StoreContext";
 import { GoldCoin } from "@/components/ui/GoldCoin";
 import { SealStamp } from "@/components/ui/SealStamp";
+import { feedbackTap, feedbackCorrect, feedbackReveal, feedbackFinish, randomPraise } from "@/lib/feedback";
 import type { WordResult } from "@/lib/types";
 
 type WordStatus = "pending" | "revealed" | "correct" | "wrong";
@@ -53,8 +54,12 @@ function TestModeContent() {
   // Guard so coins are awarded exactly once per completed test (not on every re-render)
   const coinsAwardedRef = useRef(false);
 
+  // A stable encouragement phrase for the completion screen.
+  const praise = useMemo(() => randomPraise(), [finished]);
+
   useEffect(() => {
     if (finished) {
+      feedbackFinish();
       if (!coinsAwardedRef.current) {
         coinsAwardedRef.current = true;
         const correct = statuses.filter((s) => s === "correct").length;
@@ -79,6 +84,7 @@ function TestModeContent() {
     const next = [...statuses];
     next[index] = "wrong";
     setStatuses(next);
+    feedbackReveal();
     addMistake({
       wordId: current.id,
       childId: child?.id ?? "",
@@ -94,6 +100,7 @@ function TestModeContent() {
     const next = [...statuses];
     next[index] = "correct";
     setStatuses(next);
+    feedbackCorrect();
     if (index < words.length - 1) {
       setIndex((i) => i + 1);
       setPlayTrigger((t) => t + 1);
@@ -174,6 +181,7 @@ function TestModeContent() {
             <span className="text-7xl mb-3">{emoji}</span>
           )}
           <h2 className="calligraphy text-2xl font-extrabold text-gray-800 mb-1">测试完成！</h2>
+          <p className="calligraphy text-lg font-bold text-brand-500 mb-1">{praise}</p>
           <p className="text-sm text-gray-400 mb-4">Test Complete</p>
 
           <p className="text-gray-600 text-sm mb-2">
@@ -332,12 +340,12 @@ function TestModeContent() {
         {/* Prev / Next */}
         <div className="flex gap-3 shrink-0 pb-2">
           <Button variant="ghost" size="lg" fullWidth
-            onClick={() => { setIndex((i) => Math.max(0, i - 1)); setPlayTrigger((t) => t + 1); }}
+            onClick={() => { setIndex((i) => Math.max(0, i - 1)); setPlayTrigger((t) => t + 1); feedbackTap(); }}
             disabled={index === 0}>
             <span className="text-2xl font-black">←</span>
           </Button>
           {index < words.length - 1 ? (
-            <Button size="lg" fullWidth onClick={() => { setIndex((i) => i + 1); setPlayTrigger((t) => t + 1); }}>
+            <Button size="lg" fullWidth onClick={() => { setIndex((i) => i + 1); setPlayTrigger((t) => t + 1); feedbackTap(); }}>
               <span className="text-2xl font-black">→</span>
             </Button>
           ) : (

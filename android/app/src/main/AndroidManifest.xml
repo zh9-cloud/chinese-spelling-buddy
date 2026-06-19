@@ -32,4 +32,6 @@
     <!-- Permissions -->
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <!-- Haptic feedback for the practice screens (navigator.vibrate). -->
+    <uses-permission android:name="android.permission.VIBRATE" />
 </manifest>

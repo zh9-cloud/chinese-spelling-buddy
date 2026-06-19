@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { AppShell } from "@/components/layout/AppShell";
@@ -8,6 +8,33 @@ import { OAuthButtons } from "@/components/ui/OAuthButtons";
 import { useAuth } from "@/context/AuthContext";
 import { useEntitlement } from "@/lib/useEntitlement";
 import { isSupabaseConfigured } from "@/lib/supabase";
+import { isFeedbackOn, setFeedbackOn, feedbackCorrect } from "@/lib/feedback";
+
+/** Toggle for practice sound + vibration (default on). Read on the client only. */
+function FeedbackToggle() {
+  const [on, setOn] = useState(true);
+  useEffect(() => { setOn(isFeedbackOn()); }, []);
+  function toggle() {
+    const v = !on;
+    setOn(v);
+    setFeedbackOn(v);
+    if (v) feedbackCorrect(); // little preview when turning on
+  }
+  return (
+    <div className="flex items-center gap-3 px-4 py-3">
+      <i className="ti ti-volume text-xl w-6 text-center text-gray-500" aria-hidden="true" />
+      <div className="flex-1 min-w-0">
+        <p className="text-sm font-semibold text-gray-700">声音 & 震动 Sound &amp; vibration</p>
+        <p className="text-xs text-gray-400 mt-0.5">练习时的按键音效与答对反馈（震动仅安卓）</p>
+      </div>
+      <button onClick={toggle} role="switch" aria-checked={on}
+        aria-label="声音与震动"
+        className={`relative w-11 h-6 rounded-full shrink-0 transition-colors ${on ? "bg-jade-500" : "bg-gray-300"}`}>
+        <span className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${on ? "translate-x-5" : ""}`} />
+      </button>
+    </div>
+  );
+}
 
 function Row({ href, onClick, icon, label, sub, value, danger, last }: {
   href?: string; onClick?: () => void; icon: string; label: string; sub?: string; value?: string; danger?: boolean; last?: boolean;
@@ -142,6 +169,12 @@ export default function SettingsPage() {
           {billingOn && !isPro && (
             <p className="text-[11px] text-gray-400 mt-2 px-1">提醒为 Pro 功能 · Reminders are a Pro feature.</p>
           )}
+        </section>
+
+        {/* ── Practice feedback ── */}
+        <section>
+          <Label>练习反馈 Practice feedback</Label>
+          <Group><FeedbackToggle /></Group>
         </section>
 
         {/* ── General ── */}

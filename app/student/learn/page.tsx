@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, Suspense } from "react";
+import { useState, useMemo, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { AppShell } from "@/components/layout/AppShell";
 import { Button } from "@/components/ui/Button";
@@ -11,6 +11,7 @@ import { PinyinMeaning } from "@/components/student/PinyinMeaning";
 import { MiZiGeRow, KAI_STACK } from "@/components/student/MiZiGe";
 import { SealStamp } from "@/components/ui/SealStamp";
 import { useStore } from "@/context/StoreContext";
+import { feedbackTap, feedbackFinish, randomPraise } from "@/lib/feedback";
 
 function wordFontSize(text: string, isSentence?: boolean): string {
   if (isSentence) {
@@ -38,6 +39,8 @@ function LearnModeContent() {
   const [open, setOpen] = useState(false);
   const [finished, setFinished] = useState(false);
   const [playTrigger, setPlayTrigger] = useState(1);
+  // A stable encouragement phrase for the completion screen.
+  const praise = useMemo(() => randomPraise(), [finished]);
 
   const current = words[index];
   const hasDetails = !!(current?.pinyin || current?.meaning || current?.exampleSentence);
@@ -47,12 +50,12 @@ function LearnModeContent() {
 
   function goNext() {
     setOpen(false);
-    if (index < words.length - 1) { setIndex((i) => i + 1); setPlayTrigger((t) => t + 1); }
-    else setFinished(true);
+    if (index < words.length - 1) { setIndex((i) => i + 1); setPlayTrigger((t) => t + 1); feedbackTap(); }
+    else { setFinished(true); feedbackFinish(); }
   }
 
   function goPrev() {
-    if (index > 0) { setOpen(false); setIndex((i) => i - 1); setPlayTrigger((t) => t + 1); }
+    if (index > 0) { setOpen(false); setIndex((i) => i - 1); setPlayTrigger((t) => t + 1); feedbackTap(); }
   }
 
   if (!dictation || words.length === 0) {
@@ -71,7 +74,8 @@ function LearnModeContent() {
             <span className="text-6xl">🎉</span>
             <SealStamp text="棒" size={92} />
           </div>
-          <h2 className="calligraphy text-2xl font-extrabold text-gray-800 mb-2">学习完成！</h2>
+          <h2 className="calligraphy text-2xl font-extrabold text-gray-800 mb-1">学习完成！</h2>
+          <p className="calligraphy text-lg font-bold text-brand-500 mb-3">{praise}</p>
           <p className="text-gray-500 mb-8">你已经学习了全部 {words.length} 个生词！<br/><span className="text-sm">All {words.length} words reviewed!</span></p>
           <div className="space-y-3 w-full max-w-xs">
             <Button fullWidth size="lg" variant="ghost"

@@ -50,6 +50,24 @@ export function MiZiGe({ char }: { char?: string }) {
  */
 export function MiZiGeRow({ word, blanks }: { word?: string; blanks?: number }) {
   const cells = word != null ? Array.from(word).map((c) => c) : Array.from({ length: blanks ?? 0 }, () => undefined);
+
+  // 4-character words: lay out 2 over 2 so each 米字格 (and its character) is
+  // twice as large — much easier to read for P1–P3. 1/2/3-char words stay in
+  // one row. Applies to both Learn (filled) and Test (blank) cells.
+  if (cells.length === 4) {
+    return (
+      <div className="flex flex-col items-center gap-3 w-full px-2 max-w-[20rem] mx-auto">
+        {[cells.slice(0, 2), cells.slice(2, 4)].map((pair, r) => (
+          <div key={r} className="flex justify-center gap-3 w-full">
+            {pair.map((c, i) => (
+              <MiZiGe key={i} char={c} />
+            ))}
+          </div>
+        ))}
+      </div>
+    );
+  }
+
   return (
     <div className="flex items-center justify-center gap-3 w-full px-2">
       {cells.map((c, i) => (
