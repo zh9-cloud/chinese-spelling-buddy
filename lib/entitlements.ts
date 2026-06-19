@@ -43,20 +43,25 @@ async function userFromRequest(req: NextRequest, sb: SupabaseClient): Promise<st
   return data.user.id;
 }
 
-/** True when the user has a currently-valid paid subscription OR a referral grant. */
+/** True when the user has a currently-valid paid subscription (Stripe web OR
+ *  Apple/Google in-app purchase) OR a referral grant. The three sources are
+ *  ORed so a web buyer is Pro on the phone and vice-versa (shared user_id). */
 export async function isProUser(sb: SupabaseClient, userId: string): Promise<boolean> {
-  const [{ data: sub }, { data: grant }] = await Promise.all([
+  const [{ data: sub }, { data: grant }, { data: iap }] = await Promise.all([
     sb.from("subscriptions").select("status,current_period_end").eq("user_id", userId).maybeSingle(),
     sb.from("pro_grants").select("pro_until").eq("user_id", userId).maybeSingle(),
+    sb.from("iap_entitlements").select("active,expires_at").eq("user_id", userId).maybeSingle(),
   ]);
 
-  // Stripe subscription
+  // Stripe subscription (web)
   if (sub) {
     const active = sub.status === "active" || sub.status === "trialing";
     if (active && (!sub.current_period_end || new Date(sub.current_period_end).getTime() > Date.now())) {
       return true;
     }
   }
+  // In-app purchase (Apple App Store / Google Play, synced from RevenueCat)
+  if (iap?.active && (!iap.expires_at || new Date(iap.expires_at).getTime() > Date.now())) return true;
   // Referral / manual Pro grant
   if (grant?.pro_until && new Date(grant.pro_until).getTime() > Date.now()) return true;
 

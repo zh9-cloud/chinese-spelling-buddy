@@ -1,11 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { AppShell } from "@/components/layout/AppShell";
 import { useAuth } from "@/context/AuthContext";
 import { useEntitlement, getAccessToken } from "@/lib/useEntitlement";
 import { PLAN_DISPLAY, FREE_AI_QUOTA, type Plan } from "@/lib/billing";
+import { isNativePlatform } from "@/lib/platform";
+import { purchasePlan, restorePurchases } from "@/lib/revenuecat";
 
 const FREE_FEATURES = [
   "👨‍👧 最多 2 个孩子 · Up to 2 children",
@@ -24,16 +26,32 @@ const PRO_FEATURES = [
 
 export default function UpgradePage() {
   const { user } = useAuth();
-  const { isPro, loading, plan: activePlan, currentPeriodEnd } = useEntitlement();
+  const { isPro, loading, plan: activePlan, currentPeriodEnd, refresh } = useEntitlement();
   const [plan, setPlan] = useState<Plan>("annual");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+  const [notice, setNotice] = useState("");
+  // Resolved on the client to avoid an SSR/client hydration mismatch.
+  const [native, setNative] = useState(false);
+  useEffect(() => { setNative(isNativePlatform()); }, []);
 
   async function startCheckout() {
-    setError("");
+    setError(""); setNotice("");
     if (!user) { setError("请先登录后再升级 · Please log in first."); return; }
     setBusy(true);
     try {
+      // In the native app: Apple/Google in-app purchase via RevenueCat.
+      if (native) {
+        const r = await purchasePlan(user.id, plan);
+        if (r.userCancelled) { setBusy(false); return; }
+        if (!r.ok) throw new Error(r.error ?? "购买失败 · Purchase failed.");
+        // The webhook writes the DB; re-read so the UI flips to "Pro" right away.
+        setNotice("✓ 升级成功 · You're Pro now!");
+        refresh();
+        setBusy(false);
+        return;
+      }
+      // On the web: Stripe checkout (unchanged).
       const token = await getAccessToken();
       const res = await fetch("/api/stripe/checkout", {
         method: "POST",
@@ -45,6 +63,22 @@ export default function UpgradePage() {
       window.location.href = data.url;
     } catch (e) {
       setError(e instanceof Error ? e.message : "出错了，请重试");
+      setBusy(false);
+    }
+  }
+
+  async function restore() {
+    setError(""); setNotice("");
+    if (!user) { setError("请先登录后再恢复 · Please log in first."); return; }
+    setBusy(true);
+    try {
+      const r = await restorePurchases(user.id);
+      if (!r.ok) throw new Error(r.error ?? "恢复失败 · Restore failed.");
+      setNotice(r.isPro ? "✓ 已恢复购买 · Purchases restored!" : "未找到可恢复的购买 · No purchases found.");
+      refresh();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "出错了，请重试");
+    } finally {
       setBusy(false);
     }
   }
@@ -84,7 +118,10 @@ export default function UpgradePage() {
               <div className="mt-3 mb-4 rounded-xl bg-white/70 border border-jade-200 px-4 py-2.5 text-sm">
                 <p className="text-jade-700">
                   <span className="font-semibold">
-                    {activePlan === "monthly" ? "月付 Monthly" : activePlan === "annual" ? "年付 Annual" : "套餐 Plan"}
+                    {activePlan === "monthly" ? "月付 Monthly"
+                      : activePlan === "annual" ? "年付 Annual"
+                      : activePlan === "iap" ? "应用内订阅 In-app"
+                      : "套餐 Plan"}
                   </span>
                 </p>
                 <p className="text-jade-600/90 mt-0.5">
@@ -98,10 +135,18 @@ export default function UpgradePage() {
                 </p>
               </div>
             )}
-            <button onClick={openPortal} disabled={busy}
-              className="text-sm font-bold text-jade-700 border border-jade-300 rounded-xl px-5 py-2.5 hover:bg-jade-100 disabled:opacity-60">
-              {busy ? "打开中…" : "管理订阅 Manage subscription"}
-            </button>
+            {notice && <p className="text-sm text-jade-700 mb-3">{notice}</p>}
+            {native ? (
+              <p className="text-xs text-jade-600/80">
+                在手机的 App Store / Google Play 订阅设置中管理或取消。<br />
+                Manage or cancel in your App Store / Google Play subscription settings.
+              </p>
+            ) : (
+              <button onClick={openPortal} disabled={busy}
+                className="text-sm font-bold text-jade-700 border border-jade-300 rounded-xl px-5 py-2.5 hover:bg-jade-100 disabled:opacity-60">
+                {busy ? "打开中…" : "管理订阅 Manage subscription"}
+              </button>
+            )}
           </div>
         ) : (
           <>
@@ -128,11 +173,21 @@ export default function UpgradePage() {
             {error && (
               <p className="text-sm text-red-500 bg-red-50 border border-red-200 rounded-xl px-4 py-2.5">{error}</p>
             )}
+            {notice && (
+              <p className="text-sm text-jade-700 bg-jade-50 border border-jade-200 rounded-xl px-4 py-2.5">{notice}</p>
+            )}
 
             <button onClick={startCheckout} disabled={busy}
               className="w-full bg-brand-500 hover:bg-brand-600 disabled:opacity-60 text-white font-bold rounded-lg py-4 transition-all active:scale-95 shadow-lg shadow-brand-200">
-              {busy ? "前往结账…" : `升级 Pro · ${PLAN_DISPLAY[plan].price}${PLAN_DISPLAY[plan].per}`}
+              {busy ? (native ? "处理中…" : "前往结账…") : `升级 Pro · ${PLAN_DISPLAY[plan].price}${PLAN_DISPLAY[plan].per}`}
             </button>
+
+            {native && (
+              <button onClick={restore} disabled={busy}
+                className="w-full text-sm font-semibold text-gray-500 underline underline-offset-2 disabled:opacity-60">
+                恢复购买 · Restore purchases
+              </button>
+            )}
 
             {!user && (
               <p className="text-center text-xs text-gray-400">
@@ -168,7 +223,9 @@ export default function UpgradePage() {
         </div>
 
         <p className="text-center text-[11px] text-gray-300">
-          通过 Stripe 安全付款 · Secure payment via Stripe
+          {native
+            ? "通过 App Store / Google Play 安全付款 · Secure in-app purchase"
+            : "通过 Stripe 安全付款 · Secure payment via Stripe"}
         </p>
       </div>
     </AppShell>

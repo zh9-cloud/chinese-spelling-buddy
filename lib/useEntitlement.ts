@@ -46,20 +46,27 @@ export function useEntitlement(): Entitlement {
     setLoading(true);
 
     (async () => {
-      const [{ data: sub }, { data: usage }, { data: grant }] = await Promise.all([
+      const [{ data: sub }, { data: usage }, { data: grant }, { data: iap }] = await Promise.all([
         sb.from("subscriptions").select("status,plan,current_period_end").eq("user_id", user.id).maybeSingle(),
         sb.from("ai_usage").select("feature,count").eq("user_id", user.id),
         sb.from("pro_grants").select("pro_until").eq("user_id", user.id).maybeSingle(),
+        sb.from("iap_entitlements").select("active,expires_at").eq("user_id", user.id).maybeSingle(),
       ]);
       if (cancelled) return;
 
       const subActive = !!sub && (sub.status === "active" || sub.status === "trialing") &&
         (!sub.current_period_end || new Date(sub.current_period_end).getTime() > Date.now());
+      const iapActive = !!iap?.active && (!iap.expires_at || new Date(iap.expires_at).getTime() > Date.now());
       const grantActive = !!grant?.pro_until && new Date(grant.pro_until).getTime() > Date.now();
-      setIsPro(subActive || grantActive);
-      // Show the Stripe plan + expiry if subscribed, else the referral grant end.
-      setPlan(subActive ? (sub!.plan ?? null) : grantActive ? "referral" : null);
-      setCurrentPeriodEnd(subActive ? (sub!.current_period_end ?? null) : grantActive ? grant!.pro_until : null);
+      setIsPro(subActive || iapActive || grantActive);
+      // Show the Stripe plan + expiry if subscribed, then IAP, else the referral grant end.
+      setPlan(subActive ? (sub!.plan ?? null) : iapActive ? "iap" : grantActive ? "referral" : null);
+      setCurrentPeriodEnd(
+        subActive ? (sub!.current_period_end ?? null)
+        : iapActive ? (iap!.expires_at ?? null)
+        : grantActive ? grant!.pro_until
+        : null
+      );
 
       const map: Record<string, number> = {};
       for (const row of usage ?? []) map[row.feature] = row.count;
