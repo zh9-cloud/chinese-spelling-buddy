@@ -36,14 +36,17 @@ function FeedbackToggle() {
   );
 }
 
-function Row({ href, onClick, icon, label, sub, value, danger, last }: {
-  href?: string; onClick?: () => void; icon: string; label: string; sub?: string; value?: string; danger?: boolean; last?: boolean;
+function Row({ href, onClick, icon, label, sub, value, danger, accent, last }: {
+  href?: string; onClick?: () => void; icon: string; label: string; sub?: string; value?: string; danger?: boolean; accent?: boolean; last?: boolean;
 }) {
+  // accent = highlight in cinnabar (米字格 red) for primary actions.
+  const iconTone = danger ? "text-red-500" : accent ? "text-[#b83b2e]" : "text-gray-500";
+  const labelTone = danger ? "text-red-500" : accent ? "text-[#b83b2e]" : "text-gray-700";
   const inner = (
     <div className={`flex items-center gap-3 px-4 py-3 ${last ? "" : "border-b border-gray-100"}`}>
-      <i className={`ti ${icon} text-xl w-6 text-center ${danger ? "text-red-500" : "text-gray-500"}`} aria-hidden="true" />
+      <i className={`ti ${icon} text-xl w-6 text-center ${iconTone}`} aria-hidden="true" />
       <div className="flex-1 min-w-0">
-        <p className={`text-sm font-semibold ${danger ? "text-red-500" : "text-gray-700"}`}>{label}</p>
+        <p className={`text-sm font-semibold ${labelTone}`}>{label}</p>
         {sub && <p className="text-xs text-gray-400 mt-0.5">{sub}</p>}
       </div>
       {value && <span className="text-xs text-gray-400 shrink-0">{value}</span>}
@@ -122,25 +125,38 @@ export default function SettingsPage() {
           )}
         </section>
 
-        {/* ── Subscription ── */}
-        {billingOn && (
-          <section>
-            <Label>订阅 Subscription</Label>
-            <Group>
-              {isPro ? (
-                <Row href="/parent/upgrade" icon="ti-diamond" label="订阅管理 Manage"
-                  sub={`${plan === "monthly" ? "月付 Monthly" : "年付 Annual"}${validUntil ? ` · 有效期至 ${validUntil}` : ""}`} last />
-              ) : (
-                <Row href="/parent/upgrade" icon="ti-diamond" label="升级 Pro Upgrade" sub="解锁 AI 识别、AI 批改与提醒" last />
-              )}
-            </Group>
-          </section>
-        )}
-
-        {/* ── Rewards explainer ── */}
+        {/* ── Quick actions (children · upgrade · invite · feedback) ── */}
         <section>
-          <Label>奖励 Rewards</Label>
-          <div className="rounded-2xl border border-gray-200 bg-white p-4">
+          <Label>常用 Quick actions</Label>
+          <Group>
+            <Row href="/parent/children" icon="ti-users" label="孩子管理 Children" sub="添加 / 编辑孩子资料" accent />
+            {billingOn && (
+              isPro ? (
+                <Row href="/parent/upgrade" icon="ti-diamond" label="订阅管理 Manage" accent
+                  sub={`${plan === "monthly" ? "月付 Monthly" : "年付 Annual"}${validUntil ? ` · 有效期至 ${validUntil}` : ""}`} />
+              ) : (
+                <Row href="/parent/upgrade" icon="ti-diamond" label="升级 Pro Upgrade" sub="解锁 AI 识别、AI 批改与提醒" accent />
+              )
+            )}
+            <Row href="/referral" icon="ti-gift" label="邀请好友 Invite friends" sub="双方各得 1 个月 Pro · 可叠加" accent />
+            <Row href="/feedback" icon="ti-message-circle" label="意见反馈 Feedback" sub="建议、问题、想要的功能 — 发消息给我" last />
+          </Group>
+        </section>
+
+        {/* ── Reminders · practice feedback · rewards ── */}
+        <section>
+          <Label>提醒与奖励 Reminders &amp; rewards</Label>
+          <Group>
+            <Row icon="ti-mail" label="邮件提醒 Email" sub="听写前周末与前一晚自动发送到你的邮箱" />
+            <Row href="/parent/dashboard" icon="ti-calendar" label="日历提醒 Calendar" sub="在主页「导出整学期到日历」生成 .ics" />
+            <FeedbackToggle />
+          </Group>
+          {billingOn && !isPro && (
+            <p className="text-[11px] text-gray-400 mt-2 px-1">提醒为 Pro 功能 · Reminders are a Pro feature.</p>
+          )}
+
+          {/* Rewards explainer */}
+          <div className="rounded-2xl border border-gray-200 bg-white p-4 mt-3">
             <p className="text-sm font-semibold text-gray-700 mb-1.5 flex items-center gap-1.5">
               <i className="ti ti-diamond text-brand-500" aria-hidden="true" /> 钻石怎么用 How diamonds work
             </p>
@@ -149,42 +165,6 @@ export default function SettingsPage() {
               <span className="block text-gray-400 mt-1">Agree on a reward when your child reaches a diamond goal — it turns practice into a habit.</span>
             </p>
           </div>
-        </section>
-
-        {/* ── Referral ── */}
-        <section>
-          <Label>邀请 Invite</Label>
-          <Group>
-            <Row href="/referral" icon="ti-gift" label="邀请好友 Invite friends" sub="双方各得 1 个月 Pro · 可叠加" last />
-          </Group>
-        </section>
-
-        {/* ── Reminders ── */}
-        <section>
-          <Label>提醒 Reminders</Label>
-          <Group>
-            <Row icon="ti-mail" label="邮件提醒 Email" sub="听写前周末与前一晚自动发送到你的邮箱" />
-            <Row href="/parent/dashboard" icon="ti-calendar" label="日历提醒 Calendar" sub="在主页「导出整学期到日历」生成 .ics" last />
-          </Group>
-          {billingOn && !isPro && (
-            <p className="text-[11px] text-gray-400 mt-2 px-1">提醒为 Pro 功能 · Reminders are a Pro feature.</p>
-          )}
-        </section>
-
-        {/* ── Practice feedback ── */}
-        <section>
-          <Label>练习反馈 Practice feedback</Label>
-          <Group><FeedbackToggle /></Group>
-        </section>
-
-        {/* ── General ── */}
-        <section>
-          <Label>通用 General</Label>
-          <Group>
-            <Row href="/parent/children" icon="ti-users" label="孩子管理 Children" sub="添加 / 编辑孩子资料" />
-            <Row href="/feedback" icon="ti-message-circle" label="意见反馈 Feedback" sub="建议、问题、想要的功能 — 发消息给我" />
-            <Row icon="ti-world" label="语言 Language" value="中英双语" last />
-          </Group>
         </section>
 
         <p className="text-center text-[11px] text-gray-300">Chinese Spelling Buddy · 华文听写助手</p>
