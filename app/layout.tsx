@@ -43,10 +43,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <meta name="mobile-web-app-capable" content="yes" />
         <link rel="apple-touch-icon" href="/icons/icon-192.png" />
         {/* 霞鹜文楷 (LXGW WenKai) — web 楷体 for character display + calligraphic
-            headings. Self-hosted CSS sets font-display:optional so first load
-            never flashes (uses the system 楷体 fallback, then caches the web
-            font for subsequent visits). Glyph woff2 are chunked by unicode-range
-            and still served from the CDN, so only used glyphs download. */}
+            headings. Self-hosted CSS sets font-display:swap so every glyph
+            converges to the web 楷体 (avoids the mixed kai/hei that font-display
+            :optional caused when only some unicode-range chunks were cached).
+            Glyph woff2 are chunked by unicode-range and served from the CDN. */}
         <link rel="preconnect" href="https://cdn.jsdelivr.net" crossOrigin="anonymous" />
         <link rel="stylesheet" href="/fonts/lxgw-wenkai.css" />
         {/* Tabler outline icons (webfont) — used via <i className="ti ti-name" /> */}
