@@ -14,7 +14,7 @@ import type { CapacitorConfig } from "@capacitor/cli";
 
 const config: CapacitorConfig = {
   appId: "com.sgspellingbuddy.app",
-  appName: "华文听写助手",
+  appName: "小华听写",
   webDir: "capacitor-www",
   server: {
     url: process.env.CAP_SERVER_URL || "https://www.sgspellingbuddy.com",
