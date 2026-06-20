@@ -157,7 +157,7 @@ export default function ParentDashboard() {
           </div>
         )}
 
-        {billingOn && user && !inTrialMode && !isPro && (
+        {billingOn && !isPro && (
           <Link href="/parent/upgrade" className="flex items-center justify-between rounded-2xl border border-brand-200 bg-brand-50 px-4 py-3 hover:border-brand-300 transition-colors">
             <span className="text-sm font-bold text-gray-700 flex items-center gap-1.5"><i className="ti ti-diamond text-brand-500" aria-hidden="true" />升级 Pro · 解锁 AI 与提醒</span>
             <span className="text-xs font-bold text-white bg-brand-500 rounded-full px-3 py-1">升级</span>
