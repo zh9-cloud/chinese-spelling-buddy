@@ -51,18 +51,16 @@ export default function LandingPage() {
           {loggedIn ? "进入应用" : "免费试用 · 立即开始"}
           <i className="ti ti-arrow-right text-xl" aria-hidden="true" />
         </Link>
-        <p className="text-xs text-gray-400 mt-2.5">
-          {loggedIn ? (
+        {loggedIn && (
+          <p className="text-xs text-gray-400 mt-2.5">
             <span className="truncate">已登录 {user?.email}</span>
-          ) : (
-            "免注册即可试用 · 无需信用卡"
-          )}
-        </p>
+          </p>
+        )}
 
         {/* Brand + slogan */}
         <div className="mt-5 flex flex-col items-center gap-0.5">
           <p className="calligraphy text-base font-bold text-[#b83b2e]">板栗老师</p>
-          <p className="text-xs text-gray-400 tracking-wide">AI 赋能学习 · AI-powered learning</p>
+          <p className="text-xs text-gray-400 tracking-wide">用心教，智能学 · Taught with care, learn with AI</p>
         </div>
       </div>
 
