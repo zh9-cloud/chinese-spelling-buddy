@@ -6,6 +6,7 @@ import { AppShell } from "@/components/layout/AppShell";
 import { BottomTabBar } from "@/components/layout/BottomTabBar";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { GoldCoin } from "@/components/ui/GoldCoin";
+import { WelcomeModal } from "@/components/ui/WelcomeModal";
 import { useStore } from "@/context/StoreContext";
 import { useAuth } from "@/context/AuthContext";
 import { useEntitlement } from "@/lib/useEntitlement";
@@ -123,6 +124,17 @@ export default function ParentDashboard() {
       bottomBar={<BottomTabBar active="parent" />}
     >
       <div className="space-y-5 page-enter">
+
+        <WelcomeModal
+          storageKey="sb_welcome_parent"
+          title="欢迎使用 小华听写 👋"
+          steps={[
+            "👧 添加孩子（选年级 P1–P6）",
+            "📷 建词表：拍照 / PDF / 手动输入生词",
+            "🔔 让孩子用【学习】【测验】练习，还能设提醒",
+          ]}
+          buttonText="知道了 Got it"
+        />
 
         {justUpgraded && (
           <div className="rounded-2xl border border-jade-300 bg-jade-50 px-4 py-3 text-center">

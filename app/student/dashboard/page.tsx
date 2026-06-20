@@ -7,6 +7,7 @@ import { AppShell } from "@/components/layout/AppShell";
 import { BottomTabBar } from "@/components/layout/BottomTabBar";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { GoldCoin } from "@/components/ui/GoldCoin";
+import { WelcomeModal } from "@/components/ui/WelcomeModal";
 import { useStore } from "@/context/StoreContext";
 import { getUpcomingDictation, weekdayLabel, getDaysUntil } from "@/lib/mockData";
 import { computeStreak } from "@/lib/streak";
@@ -75,6 +76,17 @@ function StudentDashboardContent() {
       bottomBar={<BottomTabBar active={activeChildId} />}
     >
       <div className="space-y-5 page-enter">
+
+        <WelcomeModal
+          storageKey="sb_welcome_student"
+          title="欢迎！👋"
+          steps={[
+            "📖 点【学习】：听发音、看拼音和意思",
+            "✍️ 点【测验】：考考自己，写一写",
+            "💎 答对得钻石，错的进【错字本】再练",
+          ]}
+          buttonText="开始 Start"
+        />
 
         {!child ? (
           <EmptyState icon="👋" title="还没有孩子" description="请家长先在「设置 → 孩子管理」添加孩子。" />
