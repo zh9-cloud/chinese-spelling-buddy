@@ -25,14 +25,14 @@ export function BottomTabBar({ active }: { active: "parent" | string }) {
         <Link
           href="/parent/dashboard"
           className={[
-            "flex-1 flex flex-col items-center justify-center gap-0.5 py-2.5",
+            "flex-1 flex flex-col items-center justify-center gap-1 py-2.5",
             active === "parent" ? "text-gray-900" : "text-gray-400",
           ].join(" ")}
         >
-          <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M3 12l9-9 9 9M5 10v10h5v-6h4v6h5V10" />
           </svg>
-          <span className="text-[11px] font-semibold">家长</span>
+          <span className="text-sm font-semibold">家长</span>
         </Link>
 
         {children.map((c, i) => {
@@ -43,20 +43,20 @@ export function BottomTabBar({ active }: { active: "parent" | string }) {
               key={c.id}
               href={`/student/dashboard?child=${c.id}`}
               className={[
-                "flex-1 flex flex-col items-center justify-center gap-0.5 py-2.5",
+                "flex-1 flex flex-col items-center justify-center gap-1 py-2.5",
                 on ? "text-gray-900" : "text-gray-400",
               ].join(" ")}
             >
               <span
                 className={[
-                  "w-6 h-6 rounded-full flex items-center justify-center text-xs font-black text-white",
+                  "w-8 h-8 rounded-full flex items-center justify-center text-sm font-black text-white",
                   color.bg,
                   on ? "" : "opacity-50",
                 ].join(" ")}
               >
                 {c.name.trim().charAt(0).toUpperCase()}
               </span>
-              <span className="text-[11px] font-semibold max-w-[5rem] truncate">{c.name}</span>
+              <span className="text-sm font-semibold max-w-[6rem] truncate">{c.name}</span>
             </Link>
           );
         })}
