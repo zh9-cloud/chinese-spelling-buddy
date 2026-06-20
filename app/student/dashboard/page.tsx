@@ -111,42 +111,6 @@ function StudentDashboardContent() {
               </Link>
             </div>
 
-            {/* Streak / 连续打卡 */}
-            <div className="rounded-2xl border border-gray-200 bg-white px-4 py-3.5">
-              <div className="flex items-center gap-2 mb-0.5">
-                <i className={`ti ti-flame text-2xl ${streak.current > 0 ? "text-orange-500" : "text-gray-300"}`} aria-hidden="true" />
-                <span className="text-[15px] font-bold text-gray-800">
-                  {streak.current > 0 ? <>连续打卡 <span className="text-orange-500">{streak.current}</span> 天</> : "今天还没练，开始打卡！"}
-                </span>
-                {streak.longest > 1 && (
-                  <span className="ml-auto text-[11px] text-gray-400">最长 {streak.longest} 天</span>
-                )}
-              </div>
-              <p className="text-[11px] text-gray-400 ml-8 mb-2.5">
-                {streak.current > 0 ? `${streak.current}-day streak — keep it going!` : "Practice today to start a streak"}
-              </p>
-              <div className="flex justify-between">
-                {streak.last7.map((d) => (
-                  <div key={d.date} className="flex flex-col items-center gap-1">
-                    <span className={[
-                      "w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold",
-                      d.practiced ? "bg-orange-500 text-white" : d.isToday ? "border-2 border-orange-300 text-orange-400" : "bg-gray-100 text-gray-300",
-                    ].join(" ")}>
-                      {d.practiced ? <i className="ti ti-check" aria-hidden="true" /> : ""}
-                    </span>
-                    <span className={`text-[10px] ${d.isToday ? "text-orange-500 font-bold" : "text-gray-400"}`}>{d.weekday}</span>
-                  </div>
-                ))}
-              </div>
-              <Link href={`/report?child=${activeChildId}`}
-                className="mt-3 flex items-center justify-center gap-2 text-sm font-bold text-brand-600 border-t border-gray-100 pt-3 hover:opacity-80 active:scale-95 transition-all">
-                <i className="ti ti-chart-bar text-xl" aria-hidden="true" />
-                本周报告 · 分享成绩
-                <span className="text-xs font-normal text-gray-400">Weekly report</span>
-                <i className="ti ti-chevron-right" aria-hidden="true" />
-              </Link>
-            </div>
-
             {/* Practice grid */}
             <section>
               <h2 className="text-xs font-bold text-gray-400 uppercase tracking-wide mb-2">练习 Practice</h2>
@@ -198,6 +162,42 @@ function StudentDashboardContent() {
                 <p className="text-center text-[11px] text-gray-300">口语、写作 — 敬请期待 coming soon</p>
               </div>
             </section>
+
+            {/* Streak / 连续打卡 — moved to the bottom of the page */}
+            <div className="rounded-2xl border border-gray-200 bg-white px-4 py-3.5">
+              <div className="flex items-center gap-2 mb-0.5">
+                <i className={`ti ti-flame text-2xl ${streak.current > 0 ? "text-orange-500" : "text-gray-300"}`} aria-hidden="true" />
+                <span className="text-[15px] font-bold text-gray-800">
+                  {streak.current > 0 ? <>连续打卡 <span className="text-orange-500">{streak.current}</span> 天</> : "今天还没练，开始打卡！"}
+                </span>
+                {streak.longest > 1 && (
+                  <span className="ml-auto text-[11px] text-gray-400">最长 {streak.longest} 天</span>
+                )}
+              </div>
+              <p className="text-[11px] text-gray-400 ml-8 mb-2.5">
+                {streak.current > 0 ? `${streak.current}-day streak — keep it going!` : "Practice today to start a streak"}
+              </p>
+              <div className="flex justify-between">
+                {streak.last7.map((d) => (
+                  <div key={d.date} className="flex flex-col items-center gap-1">
+                    <span className={[
+                      "w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold",
+                      d.practiced ? "bg-orange-500 text-white" : d.isToday ? "border-2 border-orange-300 text-orange-400" : "bg-gray-100 text-gray-300",
+                    ].join(" ")}>
+                      {d.practiced ? <i className="ti ti-check" aria-hidden="true" /> : ""}
+                    </span>
+                    <span className={`text-[10px] ${d.isToday ? "text-orange-500 font-bold" : "text-gray-400"}`}>{d.weekday}</span>
+                  </div>
+                ))}
+              </div>
+              <Link href={`/report?child=${activeChildId}`}
+                className="mt-3 flex items-center justify-center gap-2 text-sm font-bold text-brand-600 border-t border-gray-100 pt-3 hover:opacity-80 active:scale-95 transition-all">
+                <i className="ti ti-chart-bar text-xl" aria-hidden="true" />
+                本周报告 · 分享成绩
+                <span className="text-xs font-normal text-gray-400">Weekly report</span>
+                <i className="ti ti-chevron-right" aria-hidden="true" />
+              </Link>
+            </div>
           </>
         )}
       </div>
