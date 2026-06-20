@@ -167,6 +167,10 @@ export default function SettingsPage() {
           </div>
         </section>
 
+        <Link href="/" className="block text-center text-sm font-semibold text-brand-500 hover:text-brand-600 py-2">
+          ← 返回首页 Back to Home
+        </Link>
+
         <p className="text-center text-[11px] text-gray-300">Chinese Spelling Buddy · 华文听写助手</p>
       </div>
     </AppShell>
