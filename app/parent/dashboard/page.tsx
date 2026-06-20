@@ -33,6 +33,7 @@ export default function ParentDashboard() {
   const { user, authLoading } = useAuth();
   const { billingOn, isPro } = useEntitlement();
   const [justUpgraded, setJustUpgraded] = useState(false);
+  const [showAllLists, setShowAllLists] = useState(false);
 
   const inTrialMode = isSupabaseConfigured() && !authLoading && !user;
 
@@ -257,7 +258,7 @@ export default function ParentDashboard() {
           <section>
             <h2 className="text-xs font-bold text-gray-400 uppercase tracking-wide mb-2">其他听写 All lists</h2>
             <div className="bg-white rounded-2xl border border-gray-100 divide-y divide-gray-100 overflow-hidden">
-              {otherLists.map((d) => {
+              {(showAllLists ? otherLists : otherLists.slice(0, 5)).map((d) => {
                 const isPast = d.dictationDate < today;
                 const score = isPast ? scoreForList(d.id) : null;
                 const completed = !!score;
@@ -285,6 +286,12 @@ export default function ParentDashboard() {
                 );
               })}
             </div>
+            {otherLists.length > 5 && (
+              <button onClick={() => setShowAllLists((v) => !v)}
+                className="w-full mt-2 text-xs font-semibold text-brand-600 hover:text-brand-700 py-1.5">
+                {showAllLists ? "收起 Show less ▲" : `显示全部 ${otherLists.length} 个 · Show all ▼`}
+              </button>
+            )}
           </section>
         )}
 
