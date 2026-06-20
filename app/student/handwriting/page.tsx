@@ -18,7 +18,6 @@ import { AppShell } from "@/components/layout/AppShell";
 import { getAccessToken } from "@/lib/useEntitlement";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
-import { Badge } from "@/components/ui/Badge";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { AudioButton } from "@/components/student/AudioButton";
 import { GoldCoin } from "@/components/ui/GoldCoin";
@@ -30,6 +29,7 @@ interface GradeResult {
   expected: string;
   written: string;
   correct: boolean;
+  aiCorrect?: boolean; // original AI judgment, to flag parent corrections
 }
 
 // ── Step 1: Pick a list ───────────────────────────────────────────────────────
@@ -68,10 +68,10 @@ function GradeFlow({ listId, childId }: { listId: string; childId: string }) {
   const [phase, setPhase] = useState<"shoot" | "grading" | "results">("shoot");
   const [preview, setPreview]     = useState<string>("");
   const [results, setResults]     = useState<GradeResult[]>([]);
-  const [score, setScore]         = useState(0);
   const [notes, setNotes]         = useState("");
   const [gradeError, setGradeError] = useState("");
   const [paywall, setPaywall] = useState(false);
+  const [saved, setSaved] = useState(false); // results persisted after parent confirms
   const sessionSaved = useRef(false);
 
   // Handle photo selection / capture
@@ -81,6 +81,8 @@ function GradeFlow({ listId, childId }: { listId: string; childId: string }) {
     setPhase("grading");
     setGradeError("");
     setPaywall(false);
+    setSaved(false);
+    sessionSaved.current = false;
 
     try {
       const base64 = await new Promise<string>((resolve, reject) => {
@@ -119,48 +121,17 @@ function GradeFlow({ listId, childId }: { listId: string; childId: string }) {
         score: number;
         notes: string;
       };
-      setResults(data.results);
-      setScore(data.score);
+      // Show an editable review first — the parent confirms (and may correct
+      // each ✓/✗) before anything is saved, so the final score / mistakes /
+      // coins reflect the corrected results.
+      setResults(data.results.map((r) => ({ ...r, aiCorrect: r.correct })));
       setNotes(data.notes);
       setPhase("results");
-
-      // Persist session + mistakes
-      if (!sessionSaved.current) {
-        sessionSaved.current = true;
-        const wordResults: WordResult[] = data.results.map((r) => ({
-          wordId: words[r.index]?.id ?? `word-${r.index}`,
-          correct: r.correct,
-          attempts: 1,
-        }));
-        saveSession({
-          id: newId(),
-          dictationListId: listId,
-          childId,
-          mode: "handwriting",
-          startedAt: new Date().toISOString(),
-          completedAt: new Date().toISOString(),
-          wordResults,
-        });
-        data.results.filter((r) => !r.correct).forEach((r) => {
-          const w = words[r.index];
-          if (w) addMistake({
-            wordId: w.id,
-            childId,
-            word: w.word,
-            pinyin: w.pinyin,
-            meaning: w.meaning,
-            wrongCount: 1,
-            lastPracticed: new Date().toISOString(),
-          });
-        });
-        const coinsEarned = data.results.filter((r) => r.correct).length;
-        if (coinsEarned > 0) addCoins(childId, coinsEarned);
-      }
     } catch (e) {
       setGradeError(e instanceof Error ? e.message : "批改失败，请重试");
       setPhase("shoot");
     }
-  }, [words, listId, childId, saveSession, addMistake, addCoins, newId]);
+  }, [words]);
 
   if (!dictation || words.length === 0) {
     return <EmptyState icon="😕" title="找不到听写列表" />;
@@ -247,10 +218,47 @@ function GradeFlow({ listId, childId }: { listId: string; childId: string }) {
     );
   }
 
-  // ── Results phase ─────────────────────────────────────────────────────────
+  // ── Results phase (editable review → parent confirm) ──────────────────────
   const correctCount = results.filter((r) => r.correct).length;
+  const score = words.length ? Math.round((correctCount / words.length) * 100) : 0;
   const emoji = score === 100 ? "🏆" : score >= 80 ? "🌟" : score >= 60 ? "😊" : "💪";
   const coinsEarned = correctCount;
+  const editedCount = results.filter((r) => r.aiCorrect !== undefined && r.correct !== r.aiCorrect).length;
+
+  // Parent taps a ✓/✗ to flip the judgment (only before saving).
+  function toggleResult(index: number) {
+    if (saved) return;
+    setResults((prev) => prev.map((r) => (r.index === index ? { ...r, correct: !r.correct } : r)));
+  }
+
+  // Persist the FINAL (corrected) results: session + mistakes + coins.
+  function confirmAndSave() {
+    if (sessionSaved.current) return;
+    sessionSaved.current = true;
+    const wordResults: WordResult[] = results.map((r) => ({
+      wordId: words[r.index]?.id ?? `word-${r.index}`,
+      correct: r.correct,
+      attempts: 1,
+    }));
+    saveSession({
+      id: newId(),
+      dictationListId: listId,
+      childId,
+      mode: "handwriting",
+      startedAt: new Date().toISOString(),
+      completedAt: new Date().toISOString(),
+      wordResults,
+    });
+    results.filter((r) => !r.correct).forEach((r) => {
+      const w = words[r.index];
+      if (w) addMistake({
+        wordId: w.id, childId, word: w.word, pinyin: w.pinyin, meaning: w.meaning,
+        wrongCount: 1, lastPracticed: new Date().toISOString(),
+      });
+    });
+    if (coinsEarned > 0) addCoins(childId, coinsEarned);
+    setSaved(true);
+  }
 
   return (
     <div className="space-y-5 page-enter">
@@ -264,10 +272,20 @@ function GradeFlow({ listId, childId }: { listId: string; childId: string }) {
         {notes && <p className="text-xs text-gray-500 mt-2 italic">{notes}</p>}
       </div>
 
+      {/* Parent-correction hint */}
+      {!saved && (
+        <div className="bg-amber-50 border border-amber-200 rounded-xl px-4 py-2.5 text-center">
+          <p className="text-xs text-amber-700">
+            👨‍👩‍👧 <b>家长纠错</b>：AI 偶尔会判错，点每个词的 ✓ / ✗ 即可改判，再「确认成绩」。
+            <span className="block text-amber-600/80 mt-0.5">Tap a ✓ / ✗ to fix any wrong judgment, then confirm.</span>
+          </p>
+        </div>
+      )}
+
       {/* Coins */}
       {coinsEarned > 0 && (
         <div className="bg-amber-50 border border-amber-200 rounded-lg px-4 py-3 flex items-center justify-between">
-          <span className="text-sm font-bold text-amber-700">获得金币 Earned</span>
+          <span className="text-sm font-bold text-amber-700">{saved ? "获得金币 Earned" : "可得金币 Coins"}</span>
           <span className="flex items-center gap-1 font-black text-amber-700">
             +{coinsEarned} <GoldCoin size="sm" />
           </span>
@@ -280,21 +298,31 @@ function GradeFlow({ listId, childId }: { listId: string; childId: string }) {
         <img src={preview} alt="手写答案" className="w-full max-h-48 rounded-lg object-contain bg-gray-50 border border-gray-200" />
       )}
 
-      {/* Word-by-word breakdown */}
+      {/* Word-by-word breakdown — each ✓/✗ is tappable to correct */}
       <div className="space-y-2">
         {results.map((r) => {
           const word = words[r.index];
+          const edited = r.aiCorrect !== undefined && r.correct !== r.aiCorrect;
           return (
             <div key={r.index}
               className={["rounded-lg px-4 py-3 flex items-center gap-3", r.correct ? "bg-jade-50 border border-jade-200" : "bg-red-50 border border-red-200"].join(" ")}>
-              <Badge variant={r.correct ? "green" : "red"}>
+              <button onClick={() => toggleResult(r.index)} disabled={saved}
+                aria-label={r.correct ? "标为错 mark wrong" : "标为对 mark correct"}
+                className={[
+                  "w-9 h-9 rounded-full flex items-center justify-center text-lg font-black text-white shrink-0 transition-transform",
+                  r.correct ? "bg-jade-500" : "bg-red-500",
+                  saved ? "cursor-default" : "cursor-pointer active:scale-90",
+                ].join(" ")}>
                 {r.correct ? "✓" : "✗"}
-              </Badge>
-              <div className="flex-1">
-                <div className="flex items-center gap-2">
+              </button>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 flex-wrap">
                   <span className="text-lg font-bold cjk text-gray-800">{r.expected}</span>
                   {!r.correct && r.written && (
                     <span className="text-sm text-red-500 cjk">（写了：{r.written}）</span>
+                  )}
+                  {edited && (
+                    <span className="text-[10px] font-bold text-amber-700 bg-amber-100 rounded-full px-2 py-0.5">已改 edited</span>
                   )}
                 </div>
                 {word?.pinyin && <p className="text-xs text-brand-400">{word.pinyin}</p>}
@@ -306,16 +334,27 @@ function GradeFlow({ listId, childId }: { listId: string; childId: string }) {
         })}
       </div>
 
-      {/* Retry / Home buttons */}
+      {/* Confirm / saved / retry */}
       <div className="space-y-2 pb-4">
-        <Button fullWidth size="lg" variant="ghost"
-          onClick={() => { setPhase("shoot"); setPreview(""); sessionSaved.current = false; }}>
-          重新拍照 Retry
-        </Button>
-        <Button fullWidth size="lg"
-          onClick={() => { window.location.href = "/student/dashboard"; }}>
-          返回主页 Home
-        </Button>
+        {!saved ? (
+          <>
+            <Button fullWidth size="lg" onClick={confirmAndSave}>
+              确认成绩 Confirm{editedCount > 0 ? `（已改 ${editedCount} 个）` : ""}
+            </Button>
+            <Button fullWidth size="lg" variant="ghost"
+              onClick={() => { setPhase("shoot"); setPreview(""); setResults([]); setSaved(false); sessionSaved.current = false; }}>
+              重新拍照 Retry
+            </Button>
+          </>
+        ) : (
+          <>
+            <p className="text-center text-sm font-bold text-jade-600">✓ 已保存 Saved</p>
+            <Button fullWidth size="lg"
+              onClick={() => { window.location.href = "/student/dashboard"; }}>
+              返回主页 Home
+            </Button>
+          </>
+        )}
       </div>
     </div>
   );
