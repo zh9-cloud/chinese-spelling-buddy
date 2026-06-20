@@ -58,6 +58,12 @@ export default function LandingPage() {
             "免注册即可试用 · 无需信用卡"
           )}
         </p>
+
+        {/* Brand + slogan */}
+        <div className="mt-5 flex flex-col items-center gap-0.5">
+          <p className="calligraphy text-base font-bold text-[#b83b2e]">板栗老师</p>
+          <p className="text-xs text-gray-400 tracking-wide">AI 赋能学习 · AI-powered learning</p>
+        </div>
       </div>
 
       {/* Brand name at the very bottom */}
