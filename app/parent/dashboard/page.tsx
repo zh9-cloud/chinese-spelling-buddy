@@ -149,9 +149,9 @@ export default function ParentDashboard() {
               <i className="ti ti-flask text-base" aria-hidden="true" /> 试用模式 · Trial Mode
             </p>
             <p className="text-xs text-amber-700 leading-relaxed">
-              你正在免注册试用。词表与练习记录只保存在这台设备上，清除浏览器数据或更换设备就会丢失。到「设置」可注册或登录以云端保存。
+              数据仅存本机，换设备或清缓存会丢失。到「设置」登录即可云端备份。
               <span className="block text-amber-600/80 mt-0.5">
-                You&apos;re using the app without an account — sign in from Settings to back up.
+                Data is saved only on this device — sign in from Settings to back up.
               </span>
             </p>
           </div>
