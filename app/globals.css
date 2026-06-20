@@ -83,3 +83,16 @@
   to   { clip-path: inset(0 0 0 0); }
 }
 .ink-sweep { animation: inkSweep 0.7s ease-out both; }
+
+/* ── Larger explanatory text for young students (P1–P6) ──
+   Scoped to /student pages via the .kid-text wrapper (app/student/layout.tsx).
+   Only bumps the small UTILITY sizes for labels / pinyin / meaning / hints; the
+   big word cards use inline font-size (clamp / cqw), so they're untouched. */
+.kid-text .text-\[10px\] { font-size: 12px; }
+.kid-text .text-\[11px\] { font-size: 13px; }
+.kid-text .text-\[13px\] { font-size: 15px; }
+.kid-text .text-\[14px\] { font-size: 16px; }
+.kid-text .text-\[15px\] { font-size: 17px; }
+.kid-text .text-xs   { font-size: 0.875rem; line-height: 1.3rem; }   /* 12 → 14px */
+.kid-text .text-sm   { font-size: 1rem;     line-height: 1.5rem; }   /* 14 → 16px */
+.kid-text .text-base { font-size: 1.1rem;   line-height: 1.65rem; }  /* 16 → 17.6px */
