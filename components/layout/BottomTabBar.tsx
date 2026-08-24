@@ -1,15 +1,14 @@
 "use client";
 
 // ─────────────────────────────────────────────────────────────────────────────
-//  Bottom tab bar — the app's primary navigation: 家长 (Parent) + one tab per
-//  child, shown as a coloured avatar with the child's initials (e.g. XM) so the
-//  bar stays compact. Optional `actions` (e.g. settings / add) are rendered as
-//  icon-only buttons at the right end — on iPhone the top corners sit under the
-//  notch, so page actions live down here where they are reachable.
+//  Bottom tab bar — the app's primary navigation, symmetric by design:
+//    [🏠 家长]  [XM]  [ML]  [⚙️ 设置]
+//  The two ends are icon+label tabs; children sit in the middle as coloured
+//  avatars with their initials so the bar stays compact. Everything lives down
+//  here because on iPhone the top corners sit under the notch / Dynamic Island.
 // ─────────────────────────────────────────────────────────────────────────────
 
 import Link from "next/link";
-import type { ReactNode } from "react";
 import { useStore } from "@/context/StoreContext";
 
 const CHILD_COLORS = [
@@ -29,19 +28,19 @@ function initials(name: string): string {
   return n.slice(0, 2).toUpperCase();
 }
 
-export function BottomTabBar({ active, actions }: { active: "parent" | string; actions?: ReactNode }) {
+const TAB = "flex-1 flex flex-row items-center justify-center gap-1.5 py-3.5 rounded-xl";
+
+export function BottomTabBar({ active }: { active: "parent" | "settings" | string }) {
   const { store } = useStore();
   const children = store.children.filter((c) => c.name.trim());
 
   return (
     <nav className="bg-white/95 backdrop-blur border-t border-gray-100 safe-bottom">
       <div className="max-w-md mx-auto flex items-center px-1.5">
+        {/* 家长 */}
         <Link
           href="/parent/dashboard"
-          className={[
-            "flex-1 flex flex-row items-center justify-center gap-1.5 py-3.5 rounded-xl",
-            active === "parent" ? "text-gray-900" : "text-gray-400",
-          ].join(" ")}
+          className={[TAB, active === "parent" ? "text-gray-900" : "text-gray-400"].join(" ")}
         >
           <svg className="w-6 h-6 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M3 12l9-9 9 9M5 10v10h5v-6h4v6h5V10" />
@@ -49,6 +48,7 @@ export function BottomTabBar({ active, actions }: { active: "parent" | string; a
           <span className="text-sm font-semibold">家长</span>
         </Link>
 
+        {/* One avatar per child */}
         {children.map((c, i) => {
           const on = active === c.id;
           const color = CHILD_COLORS[i % CHILD_COLORS.length];
@@ -72,7 +72,17 @@ export function BottomTabBar({ active, actions }: { active: "parent" | string; a
           );
         })}
 
-        {actions && <div className="flex items-center gap-1 pl-1 shrink-0">{actions}</div>}
+        {/* 设置 — always visible, mirrors the 家长 tab */}
+        <Link
+          href="/settings"
+          className={[TAB, active === "settings" ? "text-gray-900" : "text-gray-400"].join(" ")}
+        >
+          <svg className="w-6 h-6 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M10.3 4.3a1 1 0 011-.8h1.4a1 1 0 011 .8l.2 1.2a6.5 6.5 0 011.5.9l1.2-.5a1 1 0 011.2.4l.7 1.2a1 1 0 01-.2 1.3l-1 .8a6.6 6.6 0 010 1.7l1 .8a1 1 0 01.2 1.3l-.7 1.2a1 1 0 01-1.2.4l-1.2-.5a6.5 6.5 0 01-1.5.9l-.2 1.2a1 1 0 01-1 .8h-1.4a1 1 0 01-1-.8l-.2-1.2a6.5 6.5 0 01-1.5-.9l-1.2.5a1 1 0 01-1.2-.4l-.7-1.2a1 1 0 01.2-1.3l1-.8a6.6 6.6 0 010-1.7l-1-.8a1 1 0 01-.2-1.3l.7-1.2a1 1 0 011.2-.4l1.2.5a6.5 6.5 0 011.5-.9l.2-1.2z" />
+            <circle cx="12" cy="12" r="2.5" />
+          </svg>
+          <span className="text-sm font-semibold">设置</span>
+        </Link>
       </div>
     </nav>
   );

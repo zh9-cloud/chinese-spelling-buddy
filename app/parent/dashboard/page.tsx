@@ -112,23 +112,7 @@ export default function ParentDashboard() {
   return (
     <AppShell
       title="家长 Parent"
-      bottomBar={
-        <BottomTabBar
-          active="parent"
-          actions={
-            <>
-              <Link href="/settings" aria-label="设置 Settings"
-                className="w-10 h-10 rounded-full bg-gray-100 text-gray-600 flex items-center justify-center active:scale-90 transition-all">
-                <i className="ti ti-settings text-[22px]" aria-hidden="true" />
-              </Link>
-              <Link href="/parent/add-dictation" aria-label="添加听写单 Add list"
-                className="w-10 h-10 rounded-full bg-brand-500 text-white flex items-center justify-center active:scale-90 transition-all">
-                <i className="ti ti-plus text-[22px]" aria-hidden="true" />
-              </Link>
-            </>
-          }
-        />
-      }
+      bottomBar={<BottomTabBar active="parent" />}
     >
       <div className="space-y-3 page-enter">
 

@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { AppShell } from "@/components/layout/AppShell";
+import { BottomTabBar } from "@/components/layout/BottomTabBar";
 import { OAuthButtons } from "@/components/ui/OAuthButtons";
 import { useAuth } from "@/context/AuthContext";
 import { useEntitlement } from "@/lib/useEntitlement";
@@ -78,7 +79,7 @@ export default function SettingsPage() {
     : null;
 
   return (
-    <AppShell title="设置 Settings" backHref="/parent/dashboard">
+    <AppShell title="设置 Settings" backHref="/parent/dashboard" bottomBar={<BottomTabBar active="settings" />}>
       <div className="space-y-5 page-enter pb-10">
 
         {/* ── Account ── */}
