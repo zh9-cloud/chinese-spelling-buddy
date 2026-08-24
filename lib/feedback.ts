@@ -11,6 +11,8 @@
 //  Every call is wrapped so it can never throw into the UI.
 // ─────────────────────────────────────────────────────────────────────────────
 
+import { isNativePlatform } from "@/lib/platform";
+
 const KEY = "sb_feedback";
 
 /** Feedback is on unless the user explicitly turned it off. */
@@ -67,7 +69,17 @@ function tones(notes: Array<[freq: number, at: number]>, type: OscillatorType, g
   }
 }
 
-function vibrate(pattern: number | number[]) {
+/** Haptics: native plugin inside the iOS/Android shell (iOS web has NO vibration
+ *  API at all), falling back to navigator.vibrate on the web. */
+function vibrate(pattern: number | number[], strength: "light" | "medium" = "light") {
+  if (isNativePlatform()) {
+    import("@capacitor/haptics")
+      .then(({ Haptics, ImpactStyle }) =>
+        Haptics.impact({ style: strength === "medium" ? ImpactStyle.Medium : ImpactStyle.Light })
+      )
+      .catch(() => {});
+    return;
+  }
   try {
     navigator.vibrate?.(pattern);
   } catch {
@@ -86,7 +98,7 @@ export function feedbackTap(): void {
 export function feedbackCorrect(): void {
   if (!isFeedbackOn()) return;
   tones([[660, 0], [988, 0.085]], "sine", 0.16, 0.13);
-  vibrate(16);
+  vibrate(16, "medium");
 }
 
 /** Soft low blip — answer revealed (不会), neutral, not discouraging. */
@@ -100,7 +112,7 @@ export function feedbackReveal(): void {
 export function feedbackFinish(): void {
   if (!isFeedbackOn()) return;
   tones([[523, 0], [659, 0.12], [784, 0.24], [1047, 0.36]], "sine", 0.18, 0.22);
-  vibrate([0, 25, 45, 25]);
+  vibrate([0, 25, 45, 25], "medium");
 }
 
 /** A few reusable encouragement phrases shown on completion. */

@@ -11,7 +11,7 @@
 //  5. Results are shown word-by-word, then saved as a session
 // ─────────────────────────────────────────────────────────────────────────────
 
-import { useState, useRef, useCallback, Suspense } from "react";
+import { useState, useRef, useEffect, useCallback, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { AppShell } from "@/components/layout/AppShell";
@@ -22,6 +22,7 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { AudioButton } from "@/components/student/AudioButton";
 import { GoldCoin } from "@/components/ui/GoldCoin";
 import { useStore } from "@/context/StoreContext";
+import { hasNativeCamera, takeNativePhoto } from "@/lib/nativeCamera";
 import type { WordResult } from "@/lib/types";
 
 interface GradeResult {
@@ -73,6 +74,9 @@ function GradeFlow({ listId, childId }: { listId: string; childId: string }) {
   const [paywall, setPaywall] = useState(false);
   const [saved, setSaved] = useState(false); // results persisted after parent confirms
   const sessionSaved = useRef(false);
+  // Native shell → use the real camera / photo picker instead of a file input.
+  const [native, setNative] = useState(false);
+  useEffect(() => { setNative(hasNativeCamera()); }, []);
 
   // Handle photo selection / capture
   const handlePhoto = useCallback(async (file: File) => {
@@ -133,6 +137,14 @@ function GradeFlow({ listId, childId }: { listId: string; childId: string }) {
     }
   }, [words]);
 
+  // Native camera / album → feeds the same handlePhoto path as the web input.
+  async function pickNative(from: "camera" | "photos") {
+    setGradeError("");
+    const r = await takeNativePhoto(from);
+    if ("file" in r) handlePhoto(r.file);
+    else if ("error" in r) setGradeError(r.error);
+  }
+
   if (!dictation || words.length === 0) {
     return <EmptyState icon="😕" title="找不到听写列表" />;
   }
@@ -173,32 +185,50 @@ function GradeFlow({ listId, childId }: { listId: string; childId: string }) {
           </Link>
         )}
 
-        <label className="flex items-center justify-center gap-3 w-full rounded-lg py-5 bg-brand-500 hover:bg-brand-600 active:scale-95 transition-all cursor-pointer shadow-lg shadow-brand-200 text-white font-bold">
-          <input
-            type="file" accept="image/*" capture="environment"
-            className="sr-only"
-            onChange={(e) => {
-              const f = e.target.files?.[0];
-              if (f) handlePhoto(f);
-              e.target.value = "";
-            }}
-          />
-          <span className="text-2xl">📷</span>
-          拍照上传答案 Photograph answers
-        </label>
+        {/* In the native app use the real system camera / photo picker; on the
+            web fall back to the file input. */}
+        {native ? (
+          <>
+            <button onClick={() => pickNative("camera")}
+              className="flex items-center justify-center gap-3 w-full rounded-lg py-5 bg-brand-500 hover:bg-brand-600 active:scale-95 transition-all shadow-lg shadow-brand-200 text-white font-bold">
+              <span className="text-2xl">📷</span>
+              拍照上传答案 Photograph answers
+            </button>
+            <button onClick={() => pickNative("photos")}
+              className="flex items-center justify-center gap-3 w-full rounded-lg py-3 bg-gray-50 hover:bg-gray-100 active:scale-95 transition-all border border-gray-200 text-gray-600 font-semibold text-sm">
+              从相册选择 Choose from album
+            </button>
+          </>
+        ) : (
+          <>
+            <label className="flex items-center justify-center gap-3 w-full rounded-lg py-5 bg-brand-500 hover:bg-brand-600 active:scale-95 transition-all cursor-pointer shadow-lg shadow-brand-200 text-white font-bold">
+              <input
+                type="file" accept="image/*" capture="environment"
+                className="sr-only"
+                onChange={(e) => {
+                  const f = e.target.files?.[0];
+                  if (f) handlePhoto(f);
+                  e.target.value = "";
+                }}
+              />
+              <span className="text-2xl">📷</span>
+              拍照上传答案 Photograph answers
+            </label>
 
-        <label className="flex items-center justify-center gap-3 w-full rounded-lg py-3 bg-gray-50 hover:bg-gray-100 active:scale-95 transition-all cursor-pointer border border-gray-200 text-gray-600 font-semibold text-sm">
-          <input
-            type="file" accept="image/*"
-            className="sr-only"
-            onChange={(e) => {
-              const f = e.target.files?.[0];
-              if (f) handlePhoto(f);
-              e.target.value = "";
-            }}
-          />
-          从相册选择 Choose from album
-        </label>
+            <label className="flex items-center justify-center gap-3 w-full rounded-lg py-3 bg-gray-50 hover:bg-gray-100 active:scale-95 transition-all cursor-pointer border border-gray-200 text-gray-600 font-semibold text-sm">
+              <input
+                type="file" accept="image/*"
+                className="sr-only"
+                onChange={(e) => {
+                  const f = e.target.files?.[0];
+                  if (f) handlePhoto(f);
+                  e.target.value = "";
+                }}
+              />
+              从相册选择 Choose from album
+            </label>
+          </>
+        )}
       </div>
     );
   }

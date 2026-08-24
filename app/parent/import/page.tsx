@@ -6,7 +6,7 @@
 //  each and saves them all at once.
 // ─────────────────────────────────────────────────────────────────────────────
 
-import { useState, useCallback } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { AppShell } from "@/components/layout/AppShell";
@@ -16,6 +16,7 @@ import { Button } from "@/components/ui/Button";
 import { useStore } from "@/context/StoreContext";
 import { newId } from "@/lib/storage";
 import { filesToImages } from "@/lib/pdfToImages";
+import { hasNativeCamera, takeNativePhoto } from "@/lib/nativeCamera";
 import { reminderTimes } from "@/lib/sgCalendar";
 
 function toDateStr(d: Date): string {
@@ -64,6 +65,9 @@ export default function ImportPage() {
   const [error, setError] = useState("");
   const [paywall, setPaywall] = useState(false);
   const [lists, setLists] = useState<ImportedList[]>([]);
+  // Native shell → offer the real system camera alongside the file chooser.
+  const [native, setNative] = useState(false);
+  useEffect(() => { setNative(hasNativeCamera()); }, []);
 
   const today = new Date().toISOString().split("T")[0];
   const onlyChild = store.children.length === 1 ? store.children[0].id : "";
@@ -245,6 +249,23 @@ export default function ImportPage() {
               The AI finds each spelling sheet (lesson, words, sentences) and ignores
               school/student names and encouragement — then you review and assign a child to each.
             </p>
+
+            {/* Native app: real system camera (best quality for OCR). The file
+                chooser below still handles PDFs and multi-page selection. */}
+            {native && (
+              <button
+                onClick={async () => {
+                  setError("");
+                  const r = await takeNativePhoto("camera");
+                  if ("file" in r) handleFiles([r.file]);
+                  else if ("error" in r) setError(r.error);
+                }}
+                className="flex items-center justify-center gap-3 w-full rounded-lg py-5 mb-3 bg-brand-500 hover:bg-brand-600 active:scale-95 transition-all shadow-lg shadow-brand-200 text-white font-bold"
+              >
+                <span className="text-2xl">📷</span>
+                拍照识别听写单 · Take a photo
+              </button>
+            )}
 
             <label
               className={[

@@ -33,6 +33,10 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,
+  // Fill the screen edge-to-edge on notch / Dynamic Island phones. Required for
+  // env(safe-area-inset-*) to return real values, which .safe-top / .safe-bottom
+  // use to keep the header and tab bar clear of the notch and home indicator.
+  viewportFit: "cover",
   themeColor: "#f5880a",
 };
 

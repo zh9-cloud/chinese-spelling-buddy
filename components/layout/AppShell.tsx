@@ -34,7 +34,8 @@ export function AppShell({
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
       {/* ── Top nav bar ── */}
-      <header className="sticky top-0 z-50 bg-white border-b border-gray-100 shadow-sm">
+      {/* safe-top keeps the bar below the notch / Dynamic Island on iPhone */}
+      <header className="sticky top-0 z-50 bg-white border-b border-gray-100 shadow-sm safe-top">
         <div className="max-w-md mx-auto flex items-center justify-between h-14 px-4">
           {leftSlot ? (
             <div className="flex items-center">{leftSlot}</div>
@@ -71,8 +72,8 @@ export function AppShell({
       <main
         className={[
           "flex-1 max-w-md mx-auto w-full",
-          noPadding ? "" : "px-4 py-5",
-          bottomBar ? "pb-24" : "",
+          noPadding ? "" : "px-4 py-3",
+          bottomBar ? "pb-28" : "",
         ].join(" ")}
       >
         {children}
@@ -82,7 +83,7 @@ export function AppShell({
       {bottomBar ? (
         <div className="sticky bottom-0 z-50">{bottomBar}</div>
       ) : (
-        <div className="h-safe-area-inset-bottom" />
+        <div className="safe-bottom" />
       )}
     </div>
   );

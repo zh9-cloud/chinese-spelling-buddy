@@ -75,7 +75,7 @@ function StudentDashboardContent() {
       }
       bottomBar={<BottomTabBar active={activeChildId} />}
     >
-      <div className="space-y-5 page-enter">
+      <div className="space-y-3 page-enter">
 
         <WelcomeModal
           storageKey="sb_welcome_student"
@@ -126,7 +126,7 @@ function StudentDashboardContent() {
                     </div>
                   ) : (
                     <Link key={a.label} href={a.href}
-                      className="flex items-center gap-3 bg-white border border-gray-200 rounded-2xl px-4 py-4 hover:border-gray-300 active:scale-95 transition-all">
+                      className="flex items-center gap-3 bg-white border border-gray-200 rounded-2xl px-4 py-3.5 hover:border-gray-300 active:scale-95 transition-all">
                       <i className={`ti ${a.icon} text-[2.75rem] leading-none ${a.color}`} aria-hidden="true" />
                       <span className="flex flex-col leading-tight">
                         <span className="text-[15px] font-bold text-gray-700">{a.label}</span>
@@ -141,21 +141,21 @@ function StudentDashboardContent() {
             {/* Browse by category */}
             <section>
               <h2 className="text-xs font-bold text-gray-400 uppercase tracking-wide mb-2">按分类浏览 Browse</h2>
-              <div className="space-y-2.5">
+              <div className="space-y-2">
                 <Link href={`/student/lists?child=${activeChildId}`}
-                  className={`flex items-center gap-2.5 rounded-2xl px-4 py-3.5 font-bold text-[15px] active:scale-[0.99] transition-all ${theme.chip}`}>
+                  className={`flex items-center gap-2.5 rounded-2xl px-4 py-3 font-bold text-[15px] active:scale-[0.99] transition-all ${theme.chip}`}>
                   <i className="ti ti-school text-xl" aria-hidden="true" />老师布置的听写
                   <i className="ti ti-chevron-right ml-auto opacity-60" aria-hidden="true" />
                 </Link>
-                <div className="flex items-center gap-2.5 rounded-2xl px-4 py-3.5 font-bold text-[15px] bg-indigo-50 text-indigo-600">
+                <div className="flex items-center gap-2.5 rounded-2xl px-4 py-3 font-bold text-[15px] bg-indigo-50 text-indigo-600">
                   <i className="ti ti-books text-xl" aria-hidden="true" />课本生词表 P1–P6
                   <span className="ml-auto text-[11px] font-bold bg-white text-indigo-500 rounded-full px-2 py-0.5">即将开放</span>
                 </div>
                 <div className="grid grid-cols-2 gap-2.5">
-                  <div className="flex items-center gap-2 rounded-2xl px-4 py-3.5 font-bold text-[15px] bg-gray-100 text-gray-400">
+                  <div className="flex items-center gap-2 rounded-2xl px-4 py-3 font-bold text-[15px] bg-gray-100 text-gray-400">
                     <i className="ti ti-microphone text-xl" aria-hidden="true" />口语<i className="ti ti-lock ml-auto text-sm" aria-hidden="true" />
                   </div>
-                  <div className="flex items-center gap-2 rounded-2xl px-4 py-3.5 font-bold text-[15px] bg-gray-100 text-gray-400">
+                  <div className="flex items-center gap-2 rounded-2xl px-4 py-3 font-bold text-[15px] bg-gray-100 text-gray-400">
                     <i className="ti ti-writing text-xl" aria-hidden="true" />写作<i className="ti ti-lock ml-auto text-sm" aria-hidden="true" />
                   </div>
                 </div>
