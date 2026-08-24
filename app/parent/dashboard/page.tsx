@@ -134,26 +134,6 @@ export default function ParentDashboard() {
           </div>
         )}
 
-        {inTrialMode && (
-          <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3">
-            <p className="text-sm font-bold text-amber-800 mb-0.5 flex items-center gap-1.5">
-              <i className="ti ti-flask text-base" aria-hidden="true" /> 试用模式 · Trial Mode
-            </p>
-            <p className="text-xs text-amber-700 leading-relaxed">
-              数据仅存本机，换设备或清缓存会丢失。到「设置」登录即可云端备份。
-              <span className="block text-amber-600/80 mt-0.5">
-                Data is saved only on this device — sign in from Settings to back up.
-              </span>
-            </p>
-          </div>
-        )}
-
-        {billingOn && !isPro && (
-          <Link href="/parent/upgrade" className="flex items-center justify-between rounded-2xl border border-brand-200 bg-brand-50 px-4 py-3 hover:border-brand-300 transition-colors">
-            <span className="text-sm font-bold text-gray-700 flex items-center gap-1.5"><i className="ti ti-diamond text-brand-500" aria-hidden="true" />升级 Pro · 解锁 AI 与提醒</span>
-            <span className="text-xs font-bold text-white bg-brand-500 rounded-full px-3 py-1">升级</span>
-          </Link>
-        )}
 
         {/* ── Diamond rewards (nudge parents to reward kids) ── */}
         {children.length > 0 && (
@@ -291,6 +271,41 @@ export default function ParentDashboard() {
         ) : nextByChild.length === 0 && otherLists.length === 0 ? (
           <EmptyState icon="📅" title="暂无听写" description="点右上角 ＋ 创建第一个听写列表。" />
         ) : null}
+
+        {/* ── Trial notice + Upgrade — side by side at the bottom ── */}
+        {(inTrialMode || (billingOn && !isPro)) && (
+          <div className={`grid gap-3 ${inTrialMode && billingOn && !isPro ? "grid-cols-2" : "grid-cols-1"}`}>
+            {inTrialMode && (
+              <div className="rounded-2xl border border-amber-200 bg-amber-50 px-3.5 py-3">
+                <p className="text-sm font-bold text-amber-800 mb-1 flex items-center gap-1.5">
+                  <i className="ti ti-flask text-base" aria-hidden="true" /> 试用模式
+                </p>
+                <p className="text-xs text-amber-700 leading-snug">
+                  数据仅存本机，登录后可云端备份。
+                  <span className="block text-amber-600/80 mt-1">
+                    Saved on this device only — sign in to back up.
+                  </span>
+                </p>
+              </div>
+            )}
+
+            {billingOn && !isPro && (
+              <Link href="/parent/upgrade"
+                className="rounded-2xl border border-brand-200 bg-brand-50 px-3.5 py-3 hover:border-brand-300 transition-colors flex flex-col">
+                <p className="text-sm font-bold text-gray-700 mb-1 flex items-center gap-1.5">
+                  <i className="ti ti-diamond text-brand-500 text-base" aria-hidden="true" /> 升级 Pro
+                </p>
+                <p className="text-xs text-gray-600 leading-snug">
+                  解锁 AI 识别、AI 批改与提醒。
+                  <span className="block text-gray-400 mt-1">
+                    Unlock AI import, AI grading &amp; reminders.
+                  </span>
+                </p>
+                <span className="mt-2.5 self-start text-xs font-bold text-white bg-brand-500 rounded-full px-3 py-1">升级 Upgrade</span>
+              </Link>
+            )}
+          </div>
+        )}
 
         <div className="h-2" />
       </div>
