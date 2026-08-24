@@ -276,7 +276,8 @@ export default function ParentDashboard() {
         {(inTrialMode || (billingOn && !isPro)) && (
           <div className={`grid gap-3 ${inTrialMode && billingOn && !isPro ? "grid-cols-2" : "grid-cols-1"}`}>
             {inTrialMode && (
-              <div className="rounded-2xl border border-amber-200 bg-amber-50 px-3.5 py-3">
+              <Link href="/settings"
+                className="rounded-2xl border border-amber-200 bg-amber-50 px-3.5 py-3 hover:border-amber-300 transition-colors flex flex-col">
                 <p className="text-sm font-bold text-amber-800 mb-1 flex items-center gap-1.5">
                   <i className="ti ti-flask text-base" aria-hidden="true" /> 试用模式
                 </p>
@@ -286,7 +287,8 @@ export default function ParentDashboard() {
                     Saved on this device only — sign in to back up.
                   </span>
                 </p>
-              </div>
+                <span className="mt-2.5 self-start text-xs font-bold text-white bg-amber-500 rounded-full px-3 py-1">登录 Sign in</span>
+              </Link>
             )}
 
             {billingOn && !isPro && (
