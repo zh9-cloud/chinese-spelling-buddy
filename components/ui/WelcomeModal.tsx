@@ -12,23 +12,32 @@ interface Props {
   title: string;
   steps: string[];
   buttonText?: string;
+  /**
+   * Show even if this device dismissed the card before. Pass true while the
+   * account is still empty: a parent who signs up on a device that already ran
+   * the trial would otherwise never see the guide, which is exactly when they
+   * need it (and what an App Store reviewer lands in).
+   */
+  forceShow?: boolean;
 }
 
-export function WelcomeModal({ storageKey, title, steps, buttonText = "开始 Start" }: Props) {
+export function WelcomeModal({ storageKey, title, steps, buttonText = "开始 Start", forceShow }: Props) {
   const [show, setShow] = useState(false);
+  const [dismissed, setDismissed] = useState(false);
 
   useEffect(() => {
     try {
-      if (localStorage.getItem(storageKey) !== "1") setShow(true);
+      if (forceShow || localStorage.getItem(storageKey) !== "1") setShow(true);
     } catch { /* ignore */ }
-  }, [storageKey]);
+  }, [storageKey, forceShow]);
 
   function dismiss() {
     try { localStorage.setItem(storageKey, "1"); } catch { /* ignore */ }
+    setDismissed(true);
     setShow(false);
   }
 
-  if (!show) return null;
+  if (!show || dismissed) return null;
 
   return (
     <div

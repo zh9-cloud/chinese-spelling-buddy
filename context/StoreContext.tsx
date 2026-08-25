@@ -35,6 +35,7 @@ import {
 import { getSupabase } from "@/lib/supabase";
 import { useAuth } from "./AuthContext";
 import { MOCK_CHILDREN, MOCK_DICTATION_LISTS, MOCK_SESSIONS, MOCK_MISTAKES } from "@/lib/mockData";
+import { makeSampleLists } from "@/lib/sampleLists";
 
 // ─── Supabase mapping helpers ───────────────────────────────────────────────
 
@@ -286,10 +287,24 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 
   const saveChildren = useCallback((newChildren: Child[]) => {
     setStore((prev) => {
-      const next = { ...prev, children: newChildren };
+      // A child added for the first time gets two grade-appropriate starter
+      // lists, so the app is never empty right after signing up (Learn / Test /
+      // AI grading are all unreachable without a list).
+      const knownIds = new Set(prev.children.map((c) => c.id));
+      const seeded: DictationList[] = newChildren
+        .filter((c) => !knownIds.has(c.id) && c.name.trim())
+        .filter((c) => !prev.dictationLists.some((d) => d.childId === c.id))
+        .flatMap((c) => makeSampleLists(c, newId));
+
+      const next = {
+        ...prev,
+        children: newChildren,
+        dictationLists: seeded.length ? [...prev.dictationLists, ...seeded] : prev.dictationLists,
+      };
       saveStore(next);
       if (userRef.current) {
         syncChildrenToSupabase(newChildren, userRef.current.id).catch(console.error);
+        seeded.forEach((l) => upsertDictationList(l).catch(console.error));
       }
       return next;
     });

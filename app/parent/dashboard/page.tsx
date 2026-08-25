@@ -118,6 +118,7 @@ export default function ParentDashboard() {
 
         <WelcomeModal
           storageKey="sb_welcome_parent"
+          forceShow={!authLoading && children.length === 0}
           title="欢迎使用 小华听写 👋"
           steps={[
             "👧 添加孩子（选年级 P1–P6）",
