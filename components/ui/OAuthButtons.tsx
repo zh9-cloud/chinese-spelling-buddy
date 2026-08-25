@@ -1,11 +1,25 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { getSupabase } from "@/lib/supabase";
+import { isNativePlatform } from "@/lib/platform";
 
 // Google / Apple sign-in via Supabase OAuth. On success the browser is
 // redirected to the provider and back to /parent/dashboard, where the Supabase
 // client picks up the session.
+//
+// WEB ONLY. Inside the native shell these providers navigate to
+// accounts.google.com / appleid.apple.com, which is outside our origin, so the
+// system opens them in Safari — the user leaves the app and any session they
+// establish lands in Safari, not here. (Google also refuses OAuth inside
+// embedded webviews.) Native users sign in with email + password, which stays
+// in the app. Not offering third-party sign-in natively also means App Store
+// Guideline 4.8 (must offer Sign in with Apple alongside) doesn't apply.
 export function OAuthButtons({ onError }: { onError?: (msg: string) => void }) {
+  // Resolved on the client so SSR and the first client render agree.
+  const [native, setNative] = useState(false);
+  useEffect(() => { setNative(isNativePlatform()); }, []);
+
   async function handleOAuth(provider: "google" | "apple") {
     const sb = getSupabase();
     if (!sb) return;
@@ -15,6 +29,8 @@ export function OAuthButtons({ onError }: { onError?: (msg: string) => void }) {
     });
     if (error) onError?.(error.message);
   }
+
+  if (native) return null;
 
   return (
     <div className="w-full mt-5">
