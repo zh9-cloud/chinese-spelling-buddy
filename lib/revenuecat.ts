@@ -77,17 +77,46 @@ async function packageForPlan(plan: Plan) {
   );
 }
 
+/** Reject instead of hanging forever — a spinner with no end looks broken. */
+function withTimeout<T>(p: Promise<T>, ms: number, label: string): Promise<T> {
+  return Promise.race([
+    p,
+    new Promise<T>((_, reject) =>
+      setTimeout(() => reject(new Error(`${label} timed out after ${ms / 1000}s`)), ms)
+    ),
+  ]);
+}
+
 /** Purchase the selected plan via the App Store / Play Store. */
 export async function purchasePlan(appUserId: string, plan: Plan): Promise<PurchaseResult> {
   try {
-    if (!(await ensureConfigured(appUserId))) {
+    if (!(await withTimeout(ensureConfigured(appUserId), 15000, "configure"))) {
       return { ok: false, isPro: false, error: "应用内购买不可用 · In-app purchase unavailable." };
     }
-    const aPackage = await packageForPlan(plan);
-    if (!aPackage) return { ok: false, isPro: false, error: "暂无可购买的套餐 · No products available." };
+
+    // Offerings come from the store; if the products aren't live yet this is
+    // where it fails, so say so precisely instead of a generic error.
+    let aPackage;
+    try {
+      aPackage = await withTimeout(packageForPlan(plan), 20000, "getOfferings");
+    } catch (e) {
+      const m = e instanceof Error ? e.message : String(e);
+      return { ok: false, isPro: false, error: `无法获取套餐(${m})· Could not load products.` };
+    }
+    if (!aPackage) {
+      return {
+        ok: false,
+        isPro: false,
+        error: "商店暂未返回可购买的套餐，请稍后再试 · Store returned no purchasable package yet.",
+      };
+    }
 
     const Purchases = await getPurchases();
-    const { customerInfo } = await Purchases.purchasePackage({ aPackage });
+    // The App Store sheet is user-driven, so allow plenty of time — but not
+    // forever, or the button spins with no way out.
+    const { customerInfo } = await withTimeout(
+      Purchases.purchasePackage({ aPackage }), 180000, "purchase"
+    );
     return { ok: true, isPro: hasPro(customerInfo) };
   } catch (e) {
     const err = e as { code?: string; message?: string; userCancelled?: boolean };
